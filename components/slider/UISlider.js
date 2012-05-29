@@ -12,7 +12,7 @@
 
 (function(window) {
 
-    "use strict";
+    "use strict"; // Strict Mode compilant
 
     function UISlider(slider, initialValue, max, min, modifier, snapping, valueCallback, vertical) {
         if (this instanceof UISlider && slider && slider.nodeType === 1 /* MUST BE AN ELEMENT */ ) {
@@ -25,7 +25,7 @@
             if (typeof modifier === 'number') this.modifier = modifier;
             if (typeof min === 'number') this.min = min;
             if (typeof max === 'number') this.max = max;
-            if (typeof initialValue === 'number') this.initialValue = initialValue;
+            if (typeof initialValue === 'number') this.value = initialValue;
             if (typeof valueCallback === 'function') this.valueCallback = valueCallback;
             this.snapping = !! snapping;
             this.vertical = !! vertical;
@@ -46,9 +46,9 @@
 
             // relative properties for calcs
             this.dragAreaSize = this.limit(this.innerAreaSize - this.knotSize, this.knotSize, Infinity);
-            var relativeValue = this.max - this.min;
+            var variableValue = this.max - this.min;
 
-            this.snaps = Math.ceil(relativeValue / this.modifier) + (this.snapping ? 0 : 1); // +1 = last snap contact area
+            this.snaps = Math.ceil(variableValue / this.modifier) + (this.snapping ? 0 : 1); // +1 = last snap contact area
             this.snapSize = this.dragAreaSize / this.snaps;
         }
     }
@@ -58,7 +58,7 @@
         hasTouch: 'ontouchend' in window,
 
         // DEFAULT VALUES
-        initialValue: 0,
+        value: 0,
         max: 100,
         min: 0,
         modifier: 1,
@@ -74,19 +74,26 @@
         knotHalfSize: 0,
         dragAreaSize: 0,
         slider: null,
-        knotStyle: null,        
+        knotStyle: null,
         fillerStyle: null,
-        valueCallback: function empty() {},
+        valueCallback: null,
+        
+        eventStart: '',
+        eventMove: '',
+        eventEnd: '',
+        eventCancel: '',
+        eventLeave: '',
+        
+        redrawLocked: false,
 
-        updateKnot: function() {
-            valueCallback(min);
-            var knotPosition = 0;
-            knotStyle.cssText = 'left: ' + knotPosition + 'px';
-            fillerStyle.cssText = 'width: ' + (knotPosition + knotHalfWidth) + 'px';
-
-
-
-            var knotPosition = limit(pointerX - sliderGlobalLeft - knotHalfWidth, 0, dragAreaWidth);
+        updateKnot: function(pointer) { 
+            
+            
+            // TODO
+            
+            
+            
+            var knotPosition = this.limit(pointerX - sliderGlobalLeft - knotHalfWidth, 0, dragAreaWidth);
 
             var snapsToLeft = (knotPosition / snapWidth) >> 0; // n >> 0 === (parseInt(n, 10) || 0)
             valueCallback(limit(snapsToLeft * modifier + min, min, max));
@@ -99,33 +106,47 @@
         },
 
         handleEvent: function(e) {
+            
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // compatibilize touch events
+            if (e.touches) {
+                var touch = e.touches[0];
+                e.pageX = touch.pageX;
+                e.pageY = touch.pageY;
+            }
+            
             switch (e.type) {
-            case 'touchstart':
+            case this.eventStart:
                 return this.onStart(e);
-            case 'touchmove':
+            case this.eventMove:
                 return this.onMove(e);
-            case 'touchend':
-            case 'touchcancel':
-            case 'touchleave':
+            case this.eventEnd:
+            case this.eventCancel:
+            case this.eventLeave:
                 return this.onEnd(e);
             }
         },
 
         onStart: function(e) {
-            var offset = this.getGlobalOffset();
-            this.sliderGlobalOffset = this.vertical ? offset.x : offset.y;
+            
+            // TODO
+            
+            
+            
+            var offset = this.getGlobalOffset(this.slider);
+            this.globalOffset = this.vertical ? offset.x : offset.y;
 
             document.addEventListener('touchmove', this, false);
         },
 
         onMove: function(e) {
-
+            // TODO
         },
 
         onEnd: function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-
+            // TODO
             document.removeEventListener('touchmove', this, false);
         },
 
@@ -135,7 +156,7 @@
 
         setValue: function(value) {
             value = this.limit(this.min, value, this.max);
-
+            this.updateKnot(); // TODO update this call
         },
 
         destroy: function() {
@@ -160,12 +181,39 @@
         limit: function(min, num, max) {
             // Tip: NaN < 0 === false and NaN > 0 === false
             // this order avoids NaN
-            return value > max ? max : min < value ? value : min;
+            return num > max ? max : min < num ? num : min;
+        },
+
+        requestAnimFrame: (window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame ||
+        function(callback) {
+            window.setTimeout(callback, 17);
+        }),
+
+        requestRedraw: function(callback) {
+            if (!this.redrawLocked) {
+                this.redrawLocked = true;
+                this.requestAnimFrame(function(time) {
+                    if (callback) callback(time);
+                    this.redrawLocked = callback = false; // avoids memory leak
+                });
+            }
         }
     };
+    
+    
+    // compatibilize event types
+    
+    var proto = UISlider.prototype;
+    if (!proto.hasTouch) {
+        proto.eventStart = 'mousedown';
+        proto.eventMove = 'mousemove';
+        proto.eventEnd =  'mouseup';
+        proto.eventLeave = 'mouseout';
+        proto.eventCancel = 'mouseout';
+    }
 
-
-
+})(this);
+/*
     function UISlider(slider, initialValue, max, min, modifier, snapping, valueCallback) {
 
         // global to local optimization
@@ -309,8 +357,8 @@
         });
     }
 
-    function fakeFunction() { /*used in place of expected functions for fast pace on Android and IE*/
+    function fakeFunction() { /*used in place of expected functions for fast pace on Android and IE/
     }
     window.UISlider = UISlider;
 
-})(this);
+})(this);*/
