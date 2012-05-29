@@ -78,11 +78,11 @@
         fillerStyle: null,
         valueCallback: null,
         
-        eventStart: '',
-        eventMove: '',
-        eventEnd: '',
-        eventCancel: '',
-        eventLeave: '',
+        eventStart: 'touchstart',
+        eventMove: 'touchmove',
+        eventEnd: 'touchend',
+        eventCancel: 'touchcancel',
+        eventLeave: 'touchleave',
         
         redrawLocked: false,
 
