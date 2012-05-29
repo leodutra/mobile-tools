@@ -1,0 +1,60 @@
+/*
+    CSS do Slider customizado para Android/Desktop browsers (IE inclusive)
+*/
+
+span.ui { /* inline components */
+    display: inline-block; 
+
+    /* IE 6-7 hack. Element must be inline by default to become inline-block
+    *display: inline;
+    zoom: 1;
+    */
+}
+
+.ui.slider {
+    width: 500px;
+    height: 20px;
+    vertical-align: middle;
+    font-size: 1px;
+    line-height: 1px;
+    
+    background-color: #fff;
+    padding: 6px 5px 4px 5px;
+    border-radius: 15px;
+    -webkit-box-shadow: inset 1px 2px 2px #bbb;
+    box-shadow: inset 1px 2px 2px #bbb;
+}
+
+.ui.slider .innerArea {
+    padding: 0; /* this must have no padding, margin, border or any other effect on it's area */
+    margin: 0; /* this must have no padding, margin, border or any other effect on it's area */
+    border: none; /* this must have no padding, margin, border or any other effect on it's area */
+    outline: none; /* this must have no padding, margin, border or any other effect on it's area */
+    
+    position: relative;
+    height: 100%;
+    cursor: pointer;
+}
+
+
+.ui.slider .filler,
+.ui.slider .knot
+{
+    position: absolute; /* animation using absolute elements avoids layout reflow */
+    top: 0; /* parent is the origin */
+    left: 0; /* parent is the origin */
+    width: 0;
+    height: 100%;
+    cursor: pointer;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+}
+
+.ui.slider .filler { /* PLEASE keep this reference */}
+
+.ui.slider .knot {
+    width: 20px;
+    height: 20px;
+    background: gray;
+    border-radius: 10px;
+}/*
