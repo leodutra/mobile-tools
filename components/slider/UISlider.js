@@ -30,26 +30,30 @@
             this.snapping = !! snapping;
             this.vertical = !! vertical;
 
+            // INNER AREA
             var innerArea = slider.appendChild(document.createElement('div')); // needs append to get offsets
             innerArea.className = 'innerArea';
             this.innerAreaSize = vertical ? innerArea.offsetHeight : innerArea.offsetWidth;
 
+            // FILLER
             var filler = innerArea.appendChild(document.createElement('div'));
             filler.className = 'filler';
             this.fillerStyle = filler.style;
 
+            // KNOT
             var knot = innerArea.appendChild(document.createElement('div')); // needs append to get offsets
             knot.className = 'knot';
             this.knotStyle = knot.style;
             this.knotSize = vertical ? knot.offsetHeight : knot.offsetWidth;
-            this.knotHalfSize = this.knotSize / 2;
+            this.knotHalfSize = this.knotSize * .5;
 
-            // relative properties for calcs
-            this.dragAreaSize = this.limit(this.innerAreaSize - this.knotSize, this.knotSize, Infinity);
-            var variableValue = this.max - this.min;
-
-            this.snaps = Math.ceil(variableValue / this.modifier) + (this.snapping ? 0 : 1); // +1 = last snap contact area
+            this.dragAreaSize = snapping ? this.innerAreaSize : this.limit(this.innerAreaSize - this.knotSize, this.knotSize);
+            var valueVariation = this.max - this.min;
+            this.snaps = /* ceil to threat a possible remainder value */Math.ceil(valueVariation / this.modifier); 
             this.snapSize = this.dragAreaSize / this.snaps;
+
+            this.updateByValue(this.value);
+            document.addEventListener(this.eventStart, this, false);
         }
     }
 
@@ -63,8 +67,8 @@
         min: 0,
         modifier: 1,
         snapping: false,
-        innerAreaSize: 0,
         vertical: false,
+        valueCallback: null,
 
         // VARS
         globalOffset: 0,
@@ -72,51 +76,65 @@
         snapSize: 0,
         knotSize: 0,
         knotHalfSize: 0,
+        knotPosition: 0,
         dragAreaSize: 0,
+        innerAreaSize: 0,
         slider: null,
         knotStyle: null,
         fillerStyle: null,
-        valueCallback: null,
-        
+
+        // DEFAULT EVENT TYPES
         eventStart: 'touchstart',
         eventMove: 'touchmove',
         eventEnd: 'touchend',
         eventCancel: 'touchcancel',
         eventLeave: 'touchleave',
-        
+
+        // REDRAW LOCK
         redrawLocked: false,
 
-        updateKnot: function(pointer) { 
+        updateByPosition: function(pointerPosition) {
+            pointerPosition = this.limit(pointerPosition - this.globalOffset - (this.snapping ? 0 : this.knotHalfSize), 0, this.dragArea);
+            var snapsFromOrigin = pointerPosition / this.snapSize >> 0;
+        
+            this.value = this.limit(snapsFromOrigin * this.modifier + this.min, this.min, this.max);
+            if (this.valueCallback) this.valueCallback(this.value);
             
+            this.knotPosition = this.snapping ? this.limit(snapsFromOrigin * this.snapSize, 0, this.dragAreaSize) : pointerPosition;
+            redrawComponents();
+        },
+        
+        updateByValue: function(value) {
             
-            // TODO
+            var variableValue = (Number(value) || this.value) - this.min;
+            var snapsFromOrigin = Math.round(variableValue / this.modifier);
             
+            this.value = this.limit(snapsFromOrigin * this.modifier + this.min, this.min, this.max);
+            if (this.valueCallback) this.valueCallback(this.value);
             
-            
-            var knotPosition = this.limit(pointerX - sliderGlobalLeft - knotHalfWidth, 0, dragAreaWidth);
+            redrawComponents();
+        },
 
-            var snapsToLeft = (knotPosition / snapWidth) >> 0; // n >> 0 === (parseInt(n, 10) || 0)
-            valueCallback(limit(snapsToLeft * modifier + min, min, max));
-            knotPosition = snapping ? limit(snapsToLeft * snapWidth, 0, dragAreaWidth) : knotPosition;
-
-            requestRedraw(function(time) {
-                knotStyle.cssText = 'left: ' + knotPosition + 'px';
-                fillerStyle.cssText = 'width: ' + (knotPosition + knotHalfWidth) + 'px';
+        redrawComponents: function() {
+            var that = this;
+            requestRedraw(function() {
+                that.knotStyle.cssText = (that.vertical ? 'top:' : 'left: ') + (that.knotPosition >> 0) + 'px';
+                that.fillerStyle.cssText = (that.vertical ? 'height:' : 'width: ') + (that.knotPosition + that.knotHalfSize >> 0) + 'px';
+                that = null;
             });
         },
 
+        // GENERAL EVENT HANDLER
         handleEvent: function(e) {
-            
+
             e.preventDefault();
             e.stopPropagation();
-            
-            // compatibilize touch events
+
+            // smart and optimum force
             if (e.touches) {
-                var touch = e.touches[0];
-                e.pageX = touch.pageX;
-                e.pageY = touch.pageY;
+                e = e.changedTouches[0];
             }
-            
+
             switch (e.type) {
             case this.eventStart:
                 return this.onStart(e);
@@ -130,37 +148,33 @@
         },
 
         onStart: function(e) {
-            
-            // TODO
-            
-            
-            
             var offset = this.getGlobalOffset(this.slider);
             this.globalOffset = this.vertical ? offset.x : offset.y;
 
-            document.addEventListener('touchmove', this, false);
+            document.addEventListener(this.eventEnd, this, false);
+            document.addEventListener(this.eventMove, this, false);
         },
 
         onMove: function(e) {
-            // TODO
+            updateByPosition(this.vertical ? e.pageY : e.pageX);
         },
 
         onEnd: function(e) {
-            // TODO
-            document.removeEventListener('touchmove', this, false);
+            this.removeListeners();
+        },
+        
+        removeVolatileListeners: function() {
+            document.removeEventListener(this.eventMove, this, false);
+            document.removeEventListener(this.eventEnd, this, false);    
         },
 
         setValueCallback: function(fn) {
             if (typeof fn === 'function') this.valueCallback = fn;
         },
 
-        setValue: function(value) {
-            value = this.limit(this.min, value, this.max);
-            this.updateKnot(); // TODO update this call
-        },
-
         destroy: function() {
-            this.handleEvent = function() {};
+            this.removeVolatileListeners();
+            document.removeEventListener(this.eventStart, this, false);
             this.slider = this.knotStyle = this.fillerStyle = this.valueCallback = null;
         },
 
@@ -178,9 +192,10 @@
             };
         },
 
-        limit: function(min, num, max) {
+        limit: function(num, min, max) {
             // Tip: NaN < 0 === false and NaN > 0 === false
             // this order avoids NaN
+            max = typeof max === 'number' ? max : Infinity;
             return num > max ? max : min < num ? num : min;
         },
 
@@ -199,15 +214,14 @@
             }
         }
     };
-    
-    
+
+
     // compatibilize event types
-    
     var proto = UISlider.prototype;
     if (!proto.hasTouch) {
         proto.eventStart = 'mousedown';
         proto.eventMove = 'mousemove';
-        proto.eventEnd =  'mouseup';
+        proto.eventEnd = 'mouseup';
         proto.eventLeave = 'mouseout';
         proto.eventCancel = 'mouseout';
     }
