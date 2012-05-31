@@ -226,7 +226,10 @@
         proto.eventCancel = 'mouseout';
     }
 
+    window.UISlider = UISlider;
+
 })(this);
+new window.UISlider();
 /*
     function UISlider(slider, initialValue, max, min, modifier, snapping, valueCallback) {
 

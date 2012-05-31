@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+    <head>
+        <link href="ui-slider.css" media="all" type="text/css" />
+    </head>
+    <body>
+        <span class="ui slider"></span>    
+        <script>
+        
+            var sliders = document.getElementsByClassName('slider');
+            var i = sliders.length;
+            while (i--) {
+                new UISlider(sliders[i]);
+            }
+        </script>
+    </body>
+</html>
