@@ -2,7 +2,7 @@
  * 
  * Como usar:
  * 
- *     	// incluir o CSS slider.css
+ *         // incluir o CSS slider.css
  * 
  * 		$(document).ready(function() {
  * 			new UISlider(document.getElementById('ID DO MEU SLIDER'), initialValue, max, min, modifier, snapping, function(valor) { }, vertical);
@@ -49,11 +49,11 @@
 
             this.dragAreaSize = snapping ? this.innerAreaSize : this.limit(this.innerAreaSize - this.knotSize, this.knotSize);
             var valueVariation = this.max - this.min;
-            this.snaps = /* ceil to threat a possible remainder value */Math.ceil(valueVariation / this.modifier); 
+            this.snaps = /* ceil to threat a possible remainder value */Math.ceil(valueVariation / this.modifier) +(this.snapping ? 1 : 0); 
             this.snapSize = this.dragAreaSize / this.snaps;
 
             this.updateByValue(this.value);
-            document.addEventListener(this.eventStart, this, false);
+            slider.addEventListener(this.eventStart, this, false);
         }
     }
 
@@ -94,14 +94,14 @@
         redrawLocked: false,
 
         updateByPosition: function(pointerPosition) {
-            pointerPosition = this.limit(pointerPosition - this.globalOffset - (this.snapping ? 0 : this.knotHalfSize), 0, this.dragArea);
+            pointerPosition = this.limit(pointerPosition - this.globalOffset - (this.snapping ? 0 : this.knotHalfSize), 0, this.dragAreaSize);
             var snapsFromOrigin = pointerPosition / this.snapSize >> 0;
         
             this.value = this.limit(snapsFromOrigin * this.modifier + this.min, this.min, this.max);
             if (this.valueCallback) this.valueCallback(this.value);
             
             this.knotPosition = this.snapping ? this.limit(snapsFromOrigin * this.snapSize, 0, this.dragAreaSize) : pointerPosition;
-            redrawComponents();
+            this.redrawComponents();
         },
         
         updateByValue: function(value) {
@@ -112,12 +112,13 @@
             this.value = this.limit(snapsFromOrigin * this.modifier + this.min, this.min, this.max);
             if (this.valueCallback) this.valueCallback(this.value);
             
-            redrawComponents();
+            this.knotPosition = this.limit(snapsFromOrigin * this.snapSize, 0, this.dragAreaSize-this.knotSize);
+            this.redrawComponents();
         },
 
         redrawComponents: function() {
             var that = this;
-            requestRedraw(function() {
+            this.requestRedraw(function() {
                 that.knotStyle.cssText = (that.vertical ? 'top:' : 'left: ') + (that.knotPosition >> 0) + 'px';
                 that.fillerStyle.cssText = (that.vertical ? 'height:' : 'width: ') + (that.knotPosition + that.knotHalfSize >> 0) + 'px';
                 that = null;
@@ -126,10 +127,10 @@
 
         // GENERAL EVENT HANDLER
         handleEvent: function(e) {
-
+            try {
             e.preventDefault();
             e.stopPropagation();
-
+            
             // smart and optimum force
             if (e.touches) {
                 e = e.changedTouches[0];
@@ -145,6 +146,8 @@
             case this.eventLeave:
                 return this.onEnd(e);
             }
+            
+            }catch(e){console.log(e)}
         },
 
         onStart: function(e) {
@@ -156,11 +159,11 @@
         },
 
         onMove: function(e) {
-            updateByPosition(this.vertical ? e.pageY : e.pageX);
+            this.updateByPosition(this.vertical ? e.pageY : e.pageX);
         },
 
         onEnd: function(e) {
-            this.removeListeners();
+            this.removeVolatileListeners();
         },
         
         removeVolatileListeners: function() {
@@ -198,21 +201,23 @@
             max = typeof max === 'number' ? max : Infinity;
             return num > max ? max : min < num ? num : min;
         },
-
-        requestAnimFrame: (window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame ||
-        function(callback) {
-            window.setTimeout(callback, 17);
-        }),
-
+    
         requestRedraw: function(callback) {
             if (!this.redrawLocked) {
                 this.redrawLocked = true;
+                var that = this;
                 this.requestAnimFrame(function(time) {
                     if (callback) callback(time);
-                    this.redrawLocked = callback = false; // avoids memory leak
+                    that.redrawLocked = callback = false; // avoids memory leak
                 });
             }
+        },
+
+        requestAnimFrame:function(callback) {
+            window.setTimeout(callback, 17);
         }
+
+        
     };
 
 

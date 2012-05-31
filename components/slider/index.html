@@ -1,16 +1,19 @@
 <!DOCTYPE html>
 <html lang="pt-br">
     <head>
-        <link href="ui-slider.css" media="all" type="text/css" />
+        <link href="ui-slider.css" media="all" type="text/css" rel="stylesheet"/>
     </head>
     <body>
-        <span class="ui slider"></span>    
+        <div id="info"></div>
+        <span class="ui slider"></span>
+        <script src="UISlider.js"></script>
         <script>
         
             var sliders = document.getElementsByClassName('slider');
             var i = sliders.length;
             while (i--) {
-                new UISlider(sliders[i]);
+                
+                new UISlider(sliders[i], 5, 20, 0, 1, true, function(value){document.getElementById('info').innerHTML = value}, false);
             }
         </script>
     </body>
