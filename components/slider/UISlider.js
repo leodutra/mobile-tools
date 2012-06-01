@@ -4,7 +4,7 @@
  * 
  *         // incluir o CSS slider.css
  * 
- * 		$(document).ready(function() {
+ *     	$(document).ready(function() {
  * 			new UISlider(document.getElementById('ID DO MEU SLIDER'), initialValue, max, min, modifier, snapping, function(valor) { }, vertical);
  *		});
  * 
@@ -16,44 +16,8 @@
 
     function UISlider(slider, initialValue, max, min, modifier, snapping, valueCallback, vertical) {
         if (this instanceof UISlider && slider && slider.nodeType === 1 /* MUST BE AN ELEMENT */ ) {
-
-            // GLOBALS TO LOCAL
-            var document = window.document;
-
             this.slider = slider;
-
-            if (typeof modifier === 'number') this.modifier = modifier;
-            if (typeof min === 'number') this.min = min;
-            if (typeof max === 'number') this.max = max;
-            if (typeof initialValue === 'number') this.value = initialValue;
-            if (typeof valueCallback === 'function') this.valueCallback = valueCallback;
-            this.snapping = !! snapping;
-            this.vertical = !! vertical;
-
-            // INNER AREA
-            var innerArea = slider.appendChild(document.createElement('div')); // needs append to get offsets
-            innerArea.className = 'innerArea';
-            this.innerAreaSize = vertical ? innerArea.offsetHeight : innerArea.offsetWidth;
-
-            // FILLER
-            var filler = innerArea.appendChild(document.createElement('div'));
-            filler.className = 'filler';
-            this.fillerStyle = filler.style;
-
-            // KNOT
-            var knot = innerArea.appendChild(document.createElement('div')); // needs append to get offsets
-            knot.className = 'knot';
-            this.knotStyle = knot.style;
-            this.knotSize = vertical ? knot.offsetHeight : knot.offsetWidth;
-            this.knotHalfSize = this.knotSize * .5;
-
-            this.dragAreaSize = snapping ? this.innerAreaSize : this.limit(this.innerAreaSize - this.knotSize, this.knotSize);
-            var valueVariation = this.max - this.min;
-            this.snaps = /* ceil to threat a possible remainder value */Math.ceil(valueVariation / this.modifier) +(this.snapping ? 1 : 0); 
-            this.snapSize = this.dragAreaSize / this.snaps;
-
-            this.updateByValue(this.value);
-            slider.addEventListener(this.eventStart, this, false);
+            this.rebuild(initialValue, max, min, modifier, snapping, valueCallback, vertical);
         }
     }
 
@@ -72,12 +36,13 @@
 
         // VARS
         globalOffset: 0,
-        snaps: 0,
-        snapSize: 0,
+        steps: 0,
+        snapGap: 0,
         knotSize: 0,
         knotHalfSize: 0,
         knotPosition: 0,
-        dragAreaSize: 0,
+        variationAreaStart: 0,
+        valuableArea: 0,
         innerAreaSize: 0,
         slider: null,
         knotStyle: null,
@@ -92,44 +57,74 @@
 
         // REDRAW LOCK
         redrawLocked: false,
-
-        setPosition: function(pointerPosition, doRedraw) {
-            pointerPosition = this.limit(pointerPosition - this.globalOffset - (this.snapping ? 0 : this.knotHalfSize), 0, this.dragAreaSize);
-            var snapsFromOrigin = pointerPosition / this.snapSize >> 0;
         
-            this.value = this.limit(snapsFromOrigin * this.modifier + this.min, this.min, this.max);
-            if (this.valueCallback) this.valueCallback(this.value);
+        rebuild: function(value, max, min, modifier, snapping, valueCallback, vertical) {
             
-            this.knotPosition = this.snapping ? this.limit(snapsFromOrigin * this.snapSize, 0, this.dragAreaSize) : pointerPosition;
-            this.redraw(doRedraw);
+            // GLOBALS TO LOCAL
+            var document = window.document;
+            
+            //this.destroy();
+            
+            if (typeof modifier === 'number') this.modifier = modifier;
+            if (typeof min === 'number') this.min = min;
+            if (typeof max === 'number') this.max = max;
+            if (typeof value === 'number') this.value = value;
+            if (typeof valueCallback === 'function') this.valueCallback = valueCallback;
+            this.snapping = !! snapping;
+            this.vertical = !! vertical;
+            console.log(snapping)
+
+            // INNER AREA
+            var innerArea = this.slider.appendChild(document.createElement('div')); // needs append to get offsets
+            innerArea.className = 'innerArea';
+            this.innerAreaSize = vertical ? innerArea.offsetHeight : innerArea.offsetWidth;
+
+            // FILLER
+            var filler = innerArea.appendChild(document.createElement('div'));
+            filler.className = 'filler';
+            this.fillerStyle = filler.style;
+
+            // KNOT
+            var knot = innerArea.appendChild(document.createElement('div')); // needs append to get offsets
+            knot.className = 'knot';
+            this.knotStyle = knot.style;
+            this.knotSize = vertical ? knot.offsetHeight : knot.offsetWidth;
+            this.knotHalfSize = this.knotSize * .5;
+
+            var valueVariation = this.max - this.min;
+            this.steps = /* ceil to threat a possible remainder value */Math.ceil(valueVariation / this.modifier);
+
+            this.valuableArea = this.limit(this.innerAreaSize - this.knotSize, this.knotSize);
+            this.snapGap = this.valuableArea / this.steps;
+
+            this.setValue(this.value);
+            this.slider.addEventListener(this.eventStart, this, false);
         },
         
-        setValue: function(value, doRedraw) {
+        setValue: function(value, skipRedraw) {
             
             var variableValue = (Number(value) || this.value) - this.min;
-            var snapsFromOrigin = Math.round(variableValue / this.modifier);
+            var stepsFromOrigin = Math.round(variableValue / this.modifier);
             
-            this.value = this.limit(snapsFromOrigin * this.modifier + this.min, this.min, this.max);
+            this.value = this.limit(stepsFromOrigin * this.modifier + this.min, this.min, this.max);
             if (this.valueCallback) this.valueCallback(this.value);
             
-            this.knotPosition = this.limit(snapsFromOrigin * this.snapSize, 0, this.dragAreaSize-this.knotSize);
-            this.redraw(doRedraw);
+            this.knotPosition = this.limit(stepsFromOrigin * this.snapGap, 0, this.valuableArea);
+            this.redraw(skipRedraw);
         },
 
         redraw: function(skip) {
-            if (skip !== false) {
-                var that = this;
-                this._requestBrowserRedraw(function() {
-                    that.knotStyle.cssText = (that.vertical ? 'top:' : 'left: ') + (that.knotPosition >> 0) + 'px';
-                    that.fillerStyle.cssText = (that.vertical ? 'height:' : 'width: ') + (that.knotPosition + that.knotHalfSize >> 0) + 'px';
-                    that = null;
-                });
-            }
+            if (skip) return;
+            var that = this;
+            this._requestBrowserRedraw(function() {
+                that.knotStyle.cssText = (that.vertical ? 'top:' : 'left: ') + (that.knotPosition >> 0) + 'px';
+                that.fillerStyle.cssText = (that.vertical ? 'height:' : 'width: ') + (that.knotPosition + that.knotHalfSize >> 0) + 'px';
+                that = null; // avoids scope counting leak
+            });
         },
 
         // GENERAL EVENT HANDLER
         handleEvent: function(e) {
-            try {
             e.preventDefault();
             e.stopPropagation();
             
@@ -148,20 +143,26 @@
             case this.eventLeave:
                 return this.onEnd(e);
             }
-            
-            }catch(e){console.log(e)}
+
         },
 
         onStart: function(e) {
             var offset = this.getGlobalOffset(this.slider);
-            this.globalOffset = this.vertical ? offset.x : offset.y;
+            this.globalOffset = this.vertical ? offset.y : offset.x;
 
             document.addEventListener(this.eventEnd, this, false);
             document.addEventListener(this.eventMove, this, false);
         },
 
         onMove: function(e) {
-            this.setPosition(this.vertical ? e.pageY : e.pageX);
+            var pointerRelativePosition = this.limit((e.pageX|| e.pageY) - this.globalOffset - this.knotHalfSize, 0, this.valuableArea);
+            var stepsFromOrigin = Math.round(pointerRelativePosition / this.snapGap);
+        
+            this.value = this.limit(stepsFromOrigin * this.modifier + this.min, this.min, this.max);
+            if (this.valueCallback) this.valueCallback(this.value);
+            
+            this.knotPosition = this.snapping ? this.limit(stepsFromOrigin * this.snapGap, 0, this.valuableArea) : pointerRelativePosition;
+            this.redraw();
         },
 
         onEnd: function(e) {
@@ -180,7 +181,11 @@
         destroy: function() {
             this._removeVolatileListeners();
             document.removeEventListener(this.eventStart, this, false);
-            this.slider = this.knotStyle = this.fillerStyle = this.valueCallback = null;
+            var slider = this.slider;
+            var children = slider.childNodes;
+            var i = children.length;
+            while(i--) slider.removeChild(children[i]);
+            this.slider = this.knotStyle = this.fillerStyle = this.valueCallback = slider = null;
         },
 
         getGlobalOffset: function(el) {
@@ -275,8 +280,8 @@ new window.UISlider();
         var dragAreaWidth = limit(innerAreaWidth - knotWidth, knotWidth, Number.MAX_VALUE);
         var valueVariation = max - min;
 
-        var snaps = Math.ceil(valueVariation / modifier) + (snapping ? 0 : 1); // +1 = last snap contact area
-        var snapWidth = dragAreaWidth / snaps;
+        var steps = Math.ceil(valueVariation / modifier) + (snapping ? 0 : 1); // +1 = last snap contact area
+        var snapWidth = dragAreaWidth / steps;
 
         valueCallback(min);
         var knotPosition = 0;
@@ -287,9 +292,9 @@ new window.UISlider();
 
             var knotPosition = limit(pointerX - sliderGlobalLeft - knotHalfWidth, 0, dragAreaWidth);
 
-            var snapsToLeft = (knotPosition / snapWidth) >> 0; // n >> 0 === (parseInt(n, 10) || 0)
-            valueCallback(limit(snapsToLeft * modifier + min, min, max));
-            knotPosition = snapping ? limit(snapsToLeft * snapWidth, 0, dragAreaWidth) : knotPosition;
+            var stepsToLeft = (knotPosition / snapWidth) >> 0; // n >> 0 === (parseInt(n, 10) || 0)
+            valueCallback(limit(stepsToLeft * modifier + min, min, max));
+            knotPosition = snapping ? limit(stepsToLeft * snapWidth, 0, dragAreaWidth) : knotPosition;
 
             requestRedraw(function(time) {
                 knotStyle.cssText = 'left: ' + knotPosition + 'px';

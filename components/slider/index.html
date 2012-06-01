@@ -5,7 +5,8 @@
     </head>
     <body>
         <div id="info"></div>
-        <span class="ui slider"></span>
+        <span class="ui slider" data-snapping="true"></span>
+        <span class="ui slider" data-snapping="false"></span>
         <script src="UISlider.js"></script>
         <script>
         
@@ -13,7 +14,7 @@
             var i = sliders.length;
             while (i--) {
                 
-                new UISlider(sliders[i], 5, 20, 0, 1, true, function(value){document.getElementById('info').innerHTML = value}, false);
+                new UISlider(sliders[i], 5, 20, 0, 1, sliders[i].getAttribute('data-snapping')=='true', function(value){document.getElementById('info').innerHTML = value}, false);
             }
         </script>
     </body>
