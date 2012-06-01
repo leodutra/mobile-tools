@@ -130,9 +130,9 @@
             this.setValue(this.value, skipRedraw);
         },
         
-        snapping: function(snapping, skipRedraw) {
-            if (typeof snapping==='boolean') {
-                this.snapping = snapping;
+        snapping: function(s, skipRedraw) {
+            if (typeof s==='boolean') {
+                this.snapping = s;
                 this.update(skipRedraw);
             }
             return this.snapping;
