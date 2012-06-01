@@ -1,4 +1,32 @@
-/* CUSTOM SLIDER para Android/Desktop browsers (IE inclusive)
+/*
+    Moby Tools UISlider
+    (https://github.com/LeoDutra/Moby-Tools/tree/master/components/slider)
+	
+	MIT License:
+	Copyright (c) 2012 Leonardo Dutra Constancio
+	 
+	Permission is hereby granted, free of charge, to any person
+	obtaining a copy of this software and associated documentation
+	files (the "Software"), to deal in the Software without
+	restriction, including without limitation the rights to use,
+	copy, modify, merge, publish, distribute, sublicense, and/or sell
+	copies of the Software, and to permit persons to whom the
+	Software is furnished to do so, subject to the following
+	conditions:
+	 
+	The above copyright notice and this permission notice shall be
+	included in all copies or substantial portions of the Software.
+	 
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+	EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+	OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+	NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+	HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+	WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+	FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+	OTHER DEALINGS IN THE SOFTWARE.
+ */
+/* CUSTOM SLIDER para Android/Desktop browsers
  * 
  * Como usar:
  * 
@@ -17,7 +45,34 @@
     function UISlider(slider, initialValue, max, min, modifier, snapping, valueCallback, vertical) {
         if (this instanceof UISlider && slider && slider.nodeType === 1 /* MUST BE AN ELEMENT */ ) {
             this.slider = slider;
-            this.rebuild(initialValue, max, min, modifier, snapping, valueCallback, vertical);
+            
+            // GLOBALS TO LOCAL
+            var document = window.document;
+            
+            if (typeof modifier === 'number') this.modifier = modifier;
+            if (typeof min === 'number') this.min = min;
+            if (typeof max === 'number') this.max = max;
+            if (typeof initialValue === 'number') this.value = initialValue;
+            if (typeof valueCallback === 'function') this.valueCallback = valueCallback;
+            if (typeof snapping==='boolean') this.snapping = snapping;
+            if (typeof vertical==='boolean') this.vertical = vertical;
+
+            // INNER AREA
+            this.innerArea = this.slider.appendChild(document.createElement('div')); // needs append to get offsets
+            this.innerArea.className = 'innerArea';
+
+            // FILLER
+            var filler = this.innerArea.appendChild(document.createElement('div'));
+            filler.className = 'filler';
+            this.fillerStyle = filler.style;
+
+            // KNOT
+            this.knot = this.innerArea.appendChild(document.createElement('div')); // needs append to get offsets
+            this.knot.className = 'knot';
+            this.knotStyle = this.knot.style;
+           
+            this.update();
+            this.slider.addEventListener(this.eventStart, this, false);
         }
     }
 
@@ -35,6 +90,7 @@
         valueCallback: null,
 
         // VARS
+        isBuilt: false,
         globalOffset: 0,
         steps: 0,
         snapGap: 0,
@@ -43,8 +99,10 @@
         knotPosition: 0,
         variationAreaStart: 0,
         valuableArea: 0,
+        innerArea: null,
         innerAreaSize: 0,
         slider: null,
+        knot: null,
         knotStyle: null,
         fillerStyle: null,
 
@@ -58,49 +116,54 @@
         // REDRAW LOCK
         redrawLocked: false,
         
-        rebuild: function(value, max, min, modifier, snapping, valueCallback, vertical) {
+        update: function(skipRedraw) {
             
-            // GLOBALS TO LOCAL
-            var document = window.document;
-            
-            //this.destroy();
-            
-            if (typeof modifier === 'number') this.modifier = modifier;
-            if (typeof min === 'number') this.min = min;
-            if (typeof max === 'number') this.max = max;
-            if (typeof value === 'number') this.value = value;
-            if (typeof valueCallback === 'function') this.valueCallback = valueCallback;
-            this.snapping = !! snapping;
-            this.vertical = !! vertical;
-
-            // INNER AREA
-            var innerArea = this.slider.appendChild(document.createElement('div')); // needs append to get offsets
-            innerArea.className = 'innerArea';
-            this.innerAreaSize = vertical ? innerArea.offsetHeight : innerArea.offsetWidth;
-
-            // FILLER
-            var filler = innerArea.appendChild(document.createElement('div'));
-            filler.className = 'filler';
-            this.fillerStyle = filler.style;
-
-            // KNOT
-            var knot = innerArea.appendChild(document.createElement('div')); // needs append to get offsets
-            knot.className = 'knot';
-            this.knotStyle = knot.style;
-            this.knotSize = vertical ? knot.offsetHeight : knot.offsetWidth;
+            this.innerAreaSize = this.vertical ? this.innerArea.offsetHeight : this.innerArea.offsetWidth;
+            this.knotSize = this.vertical ? this.knot.offsetHeight : this.knot.offsetWidth;
             this.knotHalfSize = this.knotSize * 0.5;
-
             var valueVariation = this.max - this.min;
             this.steps = /* ceil to threat a possible remainder value */Math.ceil(valueVariation / this.modifier);
 
             this.valuableArea = this.limit(this.innerAreaSize - this.knotSize, this.knotSize);
             this.snapGap = this.valuableArea / this.steps;
 
-            this.setValue(this.value);
-            this.slider.addEventListener(this.eventStart, this, false);
+            this.setValue(this.value, skipRedraw);
         },
         
-        setValue: function(value, skipRedraw) {
+        snapping: function(snapping, skipRedraw) {
+            if (typeof snapping==='boolean') {
+                this.snapping = snapping;
+                this.update(skipRedraw);
+            }
+            return this.snapping;
+        },
+        
+        max: function(max, skipRedraw) {
+            if (typeof max==='number') {
+                this.max = max;
+                this.update(skipRedraw);
+            }
+            return this.max;
+        },
+        
+        min: function(min, skipRedraw) {
+            if (typeof min==='number') {
+                this.min = min;
+                this.update(skipRedraw);
+            }
+            return this.min;
+        },
+        
+        
+        vertical: function(vertical, skipRedraw) {
+            if (typeof vertical==='boolean') {
+                this.vertical = vertical;
+                this.update(skipRedraw);
+            }
+            return this.vertical;
+        },
+        
+        value: function(value, skipRedraw) {
             
             var variableValue = (Number(value) || this.value) - this.min;
             var stepsFromOrigin = Math.round(variableValue / this.modifier);
@@ -110,6 +173,7 @@
             
             this.knotPosition = this.limit(stepsFromOrigin * this.snapGap, 0, this.valuableArea);
             this.redraw(skipRedraw);
+            return this.value;
         },
 
         redraw: function(skip) {
@@ -173,8 +237,12 @@
             document.removeEventListener(this.eventEnd, this, false);    
         },
 
-        setValueCallback: function(fn) {
-            if (typeof fn === 'function') this.valueCallback = fn;
+        valueCallback: function(fn) {
+            if (typeof fn === 'function') {
+                this.valueCallback = fn;
+                this.update();
+            }
+            return this.valueCallback;
         },
 
         destroy: function() {
@@ -184,7 +252,7 @@
             var children = slider.childNodes;
             var i = children.length;
             while(i--) slider.removeChild(children[i]);
-            this.slider = this.knotStyle = this.fillerStyle = this.valueCallback = slider = null;
+            this.slider = this.knot = this.knotStyle = this.fillerStyle = this.valueCallback = this.innerArea = slider = null;
         },
 
         getGlobalOffset: function(el) {
@@ -240,4 +308,3 @@
     window.UISlider = UISlider;
 
 })(this);
-new window.UISlider();
