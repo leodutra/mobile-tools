@@ -93,7 +93,7 @@
         // REDRAW LOCK
         redrawLocked: false,
 
-        updateByPosition: function(pointerPosition) {
+        setPosition: function(pointerPosition, doRedraw) {
             pointerPosition = this.limit(pointerPosition - this.globalOffset - (this.snapping ? 0 : this.knotHalfSize), 0, this.dragAreaSize);
             var snapsFromOrigin = pointerPosition / this.snapSize >> 0;
         
@@ -101,10 +101,10 @@
             if (this.valueCallback) this.valueCallback(this.value);
             
             this.knotPosition = this.snapping ? this.limit(snapsFromOrigin * this.snapSize, 0, this.dragAreaSize) : pointerPosition;
-            this.redrawComponents();
+            this.redraw(doRedraw);
         },
         
-        updateByValue: function(value) {
+        setValue: function(value, doRedraw) {
             
             var variableValue = (Number(value) || this.value) - this.min;
             var snapsFromOrigin = Math.round(variableValue / this.modifier);
@@ -113,16 +113,18 @@
             if (this.valueCallback) this.valueCallback(this.value);
             
             this.knotPosition = this.limit(snapsFromOrigin * this.snapSize, 0, this.dragAreaSize-this.knotSize);
-            this.redrawComponents();
+            this.redraw(doRedraw);
         },
 
-        redrawComponents: function() {
-            var that = this;
-            this.requestRedraw(function() {
-                that.knotStyle.cssText = (that.vertical ? 'top:' : 'left: ') + (that.knotPosition >> 0) + 'px';
-                that.fillerStyle.cssText = (that.vertical ? 'height:' : 'width: ') + (that.knotPosition + that.knotHalfSize >> 0) + 'px';
-                that = null;
-            });
+        redraw: function(skip) {
+            if (skip !== false) {
+                var that = this;
+                this._requestBrowserRedraw(function() {
+                    that.knotStyle.cssText = (that.vertical ? 'top:' : 'left: ') + (that.knotPosition >> 0) + 'px';
+                    that.fillerStyle.cssText = (that.vertical ? 'height:' : 'width: ') + (that.knotPosition + that.knotHalfSize >> 0) + 'px';
+                    that = null;
+                });
+            }
         },
 
         // GENERAL EVENT HANDLER
@@ -159,14 +161,14 @@
         },
 
         onMove: function(e) {
-            this.updateByPosition(this.vertical ? e.pageY : e.pageX);
+            this.setPosition(this.vertical ? e.pageY : e.pageX);
         },
 
         onEnd: function(e) {
-            this.removeVolatileListeners();
+            this._removeVolatileListeners();
         },
         
-        removeVolatileListeners: function() {
+        _removeVolatileListeners: function() {
             document.removeEventListener(this.eventMove, this, false);
             document.removeEventListener(this.eventEnd, this, false);    
         },
@@ -176,7 +178,7 @@
         },
 
         destroy: function() {
-            this.removeVolatileListeners();
+            this._removeVolatileListeners();
             document.removeEventListener(this.eventStart, this, false);
             this.slider = this.knotStyle = this.fillerStyle = this.valueCallback = null;
         },
@@ -202,18 +204,18 @@
             return num > max ? max : min < num ? num : min;
         },
     
-        requestRedraw: function(callback) {
+        _requestBrowserRedraw: function(callback) {
             if (!this.redrawLocked) {
                 this.redrawLocked = true;
                 var that = this;
-                this.requestAnimFrame(function(time) {
+                this._requestAnimFrame(function(time) {
                     if (callback) callback(time);
                     that.redrawLocked = callback = false; // avoids memory leak
                 });
             }
         },
 
-        requestAnimFrame:function(callback) {
+        _requestAnimFrame:function(callback) {
             window.setTimeout(callback, 17);
         }
 
