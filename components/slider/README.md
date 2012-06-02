@@ -1,11 +1,10 @@
 ### Methods:
-    - constructor(slider, initialValue = 0, max = 100, min = 0, modifier = 1, snapping = false, valueCallback = null, vertical = false)
-    - update(skipRedraw : Boolean)
-    - value(value, skipRedraw = false)
-    - max()
-    - min()
-    - snapping()
-    - vertical()
-    - redraw(skip = false)
-    - valueCallback(fn)
+    - Slider(slider, initialValue = 0, max = 100, min = 0, modifier = 1, snapping = false, valueCallback = null, vertical = false)
+    - update(skipRedraw:Boolean)
+    - snapping(value:Boolean):Boolean
+    - max(value:Number):Number
+    - min(value:Number):Number
+    - vertical(value:Boolean):Boolean
+    - value(value:Number)
+    - redraw(skip:Boolean)
     - destroy()
