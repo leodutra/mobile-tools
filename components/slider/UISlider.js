@@ -26,17 +26,6 @@
 	FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 	OTHER DEALINGS IN THE SOFTWARE.
  */
-/* CUSTOM SLIDER para Android/Desktop browsers
- * 
- * Como usar:
- * 
- *         // incluir o CSS slider.css
- * 
- *     	$(document).ready(function() {
- * 			new UISlider(document.getElementById('ID DO MEU SLIDER'), initialValue, max, min, modifier, snapping, function(valor) { }, vertical);
- *		});
- * 
- */
 
 (function(window) {
 
@@ -46,28 +35,28 @@
         if (this instanceof UISlider && slider && slider.nodeType === 1 /* MUST BE AN ELEMENT */ ) {
             this.slider = slider;
             
-            // GLOBALS TO LOCAL
+            // GLOBAL TO LOCAL
             var document = window.document;
             
-            if (typeof modifier === 'number') this.modifier = modifier;
-            if (typeof min === 'number') this.min = min;
-            if (typeof max === 'number') this.max = max;
-            if (typeof initialValue === 'number') this.value = initialValue;
+            if (typeof modifier === 'number') this._modifier = modifier;
+            if (typeof min === 'number') this._min = min;
+            if (typeof max === 'number') this._max = max;
+            if (typeof initialValue === 'number') this._value = initialValue;
             if (typeof valueCallback === 'function') this.valueCallback = valueCallback;
-            if (typeof snapping==='boolean') this.snapping = snapping;
-            if (typeof vertical==='boolean') this.vertical = vertical;
+            if (typeof snapping==='boolean') this._snapping = snapping;
+            if (typeof vertical==='boolean') this._vertical = vertical;
 
             // INNER AREA
-            this.innerArea = this.slider.appendChild(document.createElement('div')); // needs append to get offsets
-            this.innerArea.className = 'innerArea';
+            var innerArea = this.innerArea = slider.appendChild(document.createElement('div')); // needs append to get offsets
+            innerArea.className = 'innerArea';
 
             // FILLER
-            var filler = this.innerArea.appendChild(document.createElement('div'));
+            var filler = innerArea.appendChild(document.createElement('div'));
             filler.className = 'filler';
             this.fillerStyle = filler.style;
 
             // KNOT
-            this.knot = this.innerArea.appendChild(document.createElement('div')); // needs append to get offsets
+            this.knot = innerArea.appendChild(document.createElement('div')); // needs append to get offsets
             this.knot.className = 'knot';
             this.knotStyle = this.knot.style;
            
@@ -80,24 +69,22 @@
 
         hasTouch: 'ontouchend' in window,
 
-        // DEFAULT VALUES
-        value: 0,
-        max: 100,
-        min: 0,
-        modifier: 1,
-        snapping: false,
-        vertical: false,
+        // DEFAULT VALUES (setter/getter wrappable for instant updates)
+        _value: 0,
+        _max: 100,
+        _min: 0,
+        _modifier: 1,
+        _snapping: false,
+        _vertical: false,
         valueCallback: null,
 
         // VARS
-        isBuilt: false,
         globalOffset: 0,
         steps: 0,
         snapGap: 0,
         knotSize: 0,
         knotHalfSize: 0,
         knotPosition: 0,
-        variationAreaStart: 0,
         valuableArea: 0,
         innerArea: null,
         innerAreaSize: 0,
@@ -118,70 +105,69 @@
         
         update: function(skipRedraw) {
             
-            this.innerAreaSize = this.vertical ? this.innerArea.offsetHeight : this.innerArea.offsetWidth;
-            this.knotSize = this.vertical ? this.knot.offsetHeight : this.knot.offsetWidth;
+            this.innerAreaSize = this._vertical ? this.innerArea.offsetHeight : this.innerArea.offsetWidth;
+            this.knotSize = this._vertical ? this.knot.offsetHeight : this.knot.offsetWidth;
             this.knotHalfSize = this.knotSize * 0.5;
-            var valueVariation = this.max - this.min;
-            this.steps = /* ceil to threat a possible remainder value */Math.ceil(valueVariation / this.modifier);
+            var valueVariation = this._max - this._min;
+            this.steps = /* ceil to threat a possible remainder value */Math.ceil(valueVariation / this._modifier);
 
-            this.valuableArea = this.limit(this.innerAreaSize - this.knotSize, this.knotSize);
+            this.valuableArea = this.limit(this.innerAreaSize - this.knotSize, 0);
             this.snapGap = this.valuableArea / this.steps;
 
-            this.setValue(this.value, skipRedraw);
+            this.value(this._value, skipRedraw);
         },
         
-        snapping: function(s, skipRedraw) {
-            if (typeof s==='boolean') {
-                this.snapping = s;
+        snapping: function(snapping, skipRedraw) {
+            if (typeof snapping==='boolean') {
+                this._snapping = snapping;
                 this.update(skipRedraw);
             }
-            return this.snapping;
+            return this._snapping;
         },
         
         max: function(max, skipRedraw) {
             if (typeof max==='number') {
-                this.max = max;
+                this._max = max;
                 this.update(skipRedraw);
             }
-            return this.max;
+            return this._max;
         },
         
         min: function(min, skipRedraw) {
             if (typeof min==='number') {
-                this.min = min;
+                this._min = min;
                 this.update(skipRedraw);
             }
-            return this.min;
+            return this._min;
         },
         
         
         vertical: function(vertical, skipRedraw) {
             if (typeof vertical==='boolean') {
-                this.vertical = vertical;
+                this._vertical = vertical;
                 this.update(skipRedraw);
             }
-            return this.vertical;
+            return this._vertical;
         },
         
         value: function(value, skipRedraw) {
+            var variableValue = (typeof value=='number' ? value : this._value) - this._min;
+            var stepsFromOrigin = Math.round(variableValue / this._modifier);
             
-            var variableValue = (Number(value) || this.value) - this.min;
-            var stepsFromOrigin = Math.round(variableValue / this.modifier);
-            
-            this.value = this.limit(stepsFromOrigin * this.modifier + this.min, this.min, this.max);
-            if (this.valueCallback) this.valueCallback(this.value);
+            this._value = this.limit(stepsFromOrigin * this._modifier + this._min, this._min, this._max);
+            if (this.valueCallback) this.valueCallback(this._value);
             
             this.knotPosition = this.limit(stepsFromOrigin * this.snapGap, 0, this.valuableArea);
             this.redraw(skipRedraw);
-            return this.value;
+            return this._value;
         },
 
         redraw: function(skip) {
             if (skip) return;
             var that = this;
             this._requestBrowserRedraw(function() {
-                that.knotStyle.cssText = (that.vertical ? 'top:' : 'left: ') + (that.knotPosition >> 0) + 'px';
-                that.fillerStyle.cssText = (that.vertical ? 'height:' : 'width: ') + (that.knotPosition + that.knotHalfSize >> 0) + 'px';
+                that.knotStyle.cssText = (that._vertical ? 'top:' : 'left: ') + (that.knotPosition >> 0) + 'px';
+                that.fillerStyle.cssText = (that._vertical ? 'height:' : 'width: ') + (that.knotPosition + that.knotHalfSize >> 0) + 'px';
                 that = null; // avoids scope counting leak
             });
         },
@@ -200,7 +186,7 @@
             case this.eventStart:
                 return this.onStart(e);
             case this.eventMove:
-                return this.onMove(e);
+                 return this.onMove(e);
             case this.eventEnd:
             case this.eventCancel:
             case this.eventLeave:
@@ -211,20 +197,20 @@
 
         onStart: function(e) {
             var offset = this.getGlobalOffset(this.slider);
-            this.globalOffset = this.vertical ? offset.y : offset.x;
-
+            this.globalOffset = this._vertical ? offset.y : offset.x;
+            this.onMove(e);
             document.addEventListener(this.eventEnd, this, false);
             document.addEventListener(this.eventMove, this, false);
         },
 
         onMove: function(e) {
-            var pointerRelativePosition = this.limit((e.pageX|| e.pageY) - this.globalOffset - this.knotHalfSize, 0, this.valuableArea);
+            var pointerRelativePosition = this.limit((this._vertical ?  e.pageY : e.pageX) - this.globalOffset - this.knotHalfSize, 0, this.valuableArea);
             var stepsFromOrigin = Math.round(pointerRelativePosition / this.snapGap);
         
-            this.value = this.limit(stepsFromOrigin * this.modifier + this.min, this.min, this.max);
-            if (this.valueCallback) this.valueCallback(this.value);
+            this._value = this.limit(stepsFromOrigin * this._modifier + this._min, this._min, this._max);
+            if (this.valueCallback) this.valueCallback(this._value);
             
-            this.knotPosition = this.snapping ? this.limit(stepsFromOrigin * this.snapGap, 0, this.valuableArea) : pointerRelativePosition;
+            this.knotPosition = this._snapping ? this.limit(stepsFromOrigin * this.snapGap, 0, this.valuableArea) : pointerRelativePosition;
             this.redraw();
         },
 
@@ -235,14 +221,6 @@
         _removeVolatileListeners: function() {
             document.removeEventListener(this.eventMove, this, false);
             document.removeEventListener(this.eventEnd, this, false);    
-        },
-
-        valueCallback: function(fn) {
-            if (typeof fn === 'function') {
-                this.valueCallback = fn;
-                this.update();
-            }
-            return this.valueCallback;
         },
 
         destroy: function() {
@@ -290,8 +268,6 @@
         _requestAnimFrame:function(callback) {
             window.setTimeout(callback, 17);
         }
-
-        
     };
 
 

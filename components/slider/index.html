@@ -12,9 +12,10 @@
         
             var sliders = document.getElementsByClassName('slider');
             var i = sliders.length;
+            var objs = [];
             while (i--) {
                 
-                new UISlider(sliders[i], 5, 20, 0, 1, sliders[i].getAttribute('data-snapping')=='true', function(value){document.getElementById('info').innerHTML = value}, false);
+                objs[i] = new UISlider(sliders[i], 5, 20, 0, 1, sliders[i].getAttribute('data-snapping')=='true', function(value){document.getElementById('info').innerHTML = value}, false);
             }
         </script>
     </body>
