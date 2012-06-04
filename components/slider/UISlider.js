@@ -31,7 +31,7 @@
 
     "use strict"; // Strict Mode compilant
 
-    function UISlider(slider, initialValue, max, min, modifier, snapping, valueCallback, vertical) {
+    function UISlider(slider, initialValue, max, min, modifier, snapping, valueCallback, vertical, disabled) {
         if (this instanceof UISlider && slider && slider.nodeType === 1 /* MUST BE AN ELEMENT */ ) {
             this.slider = slider;
             
@@ -45,6 +45,7 @@
             if (typeof valueCallback === 'function') this.valueCallback = valueCallback;
             if (typeof snapping==='boolean') this._snapping = snapping;
             if (typeof vertical==='boolean') this._vertical = vertical;
+            if (typeof disabled==='boolean') this._disabled = disabled;
 
             // INNER AREA
             var innerArea = this.innerArea = slider.appendChild(document.createElement('div')); // needs append to get offsets
@@ -76,6 +77,7 @@
         _modifier: 1,
         _snapping: false,
         _vertical: false,
+        _disabled: false,
         valueCallback: null,
 
         // VARS
@@ -104,6 +106,7 @@
         redrawLocked: false,
         
         update: function(skipRedraw) {
+            console.log(this.slider.style)
             
             this.innerAreaSize = this._vertical ? this.innerArea.offsetHeight : this.innerArea.offsetWidth;
             this.knotSize = this._vertical ? this.knot.offsetHeight : this.knot.offsetWidth;
@@ -117,9 +120,9 @@
             this.value(this._value, skipRedraw);
         },
         
-        snapping: function(snapping, skipRedraw) {
-            if (typeof snapping==='boolean') {
-                this._snapping = snapping;
+        snapping: function(bool, skipRedraw) {
+            if (typeof bool==='boolean') {
+                this._snapping = bool;
                 this.update(skipRedraw);
             }
             return this._snapping;
@@ -141,10 +144,9 @@
             return this._min;
         },
         
-        
-        vertical: function(vertical, skipRedraw) {
-            if (typeof vertical==='boolean') {
-                this._vertical = vertical;
+        vertical: function(bool, skipRedraw) {
+            if (typeof bool==='boolean') {
+                this._vertical = bool;
                 this.update(skipRedraw);
             }
             return this._vertical;
@@ -161,11 +163,24 @@
             this.redraw(skipRedraw);
             return this._value;
         },
+        
+        disabled: function(bool, skipRedraw) {
+            if (typeof bool==='boolean') {
+                this._disabled = bool;
+                this.update(skipRedraw);
+            }
+            return this._disabled;
+        },
 
         redraw: function(skip) {
             if (skip) return;
             var that = this;
             this._requestBrowserRedraw(function() {
+                var className = that.slider.className;
+                className = className.replace(/\b\s*disabled\b/, '');
+                if (that._disabled) className += ' disabled';
+                that.slider.className = className;
+                
                 that.knotStyle.cssText = (that._vertical ? 'top:' : 'left: ') + (that.knotPosition >> 0) + 'px';
                 that.fillerStyle.cssText = (that._vertical ? 'height:' : 'width: ') + (that.knotPosition + that.knotHalfSize >> 0) + 'px';
                 that = null; // avoids scope counting leak
@@ -204,6 +219,7 @@
         },
 
         onMove: function(e) {
+            if (this._disabled) return;
             var pointerRelativePosition = this.limit((this._vertical ?  e.pageY : e.pageX) - this.globalOffset - this.knotHalfSize, 0, this.valuableArea);
             var stepsFromOrigin = Math.round(pointerRelativePosition / this.snapGap);
         

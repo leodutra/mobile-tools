@@ -53,3 +53,7 @@ span.ui { /* inline components */
     height: 20px;
     background-color: gainsboro;
 }
+
+.ui.slider.disabled .knot {
+    background-color: #333;   
+}
