@@ -69,7 +69,7 @@
 
         hasTouch: 'ontouchend' in window,
 
-        // DEFAULT VALUES (setter/getter wrappable for instant updates)
+        // DEFAULT VALUES (underscored cause of getters and setters)
         _value: 0,
         _max: 100,
         _min: 0,
@@ -109,7 +109,7 @@
             this.knotSize = this._vertical ? this.knot.offsetHeight : this.knot.offsetWidth;
             this.knotHalfSize = this.knotSize * 0.5;
             var valueVariation = this._max - this._min;
-            this.steps = /* ceil to threat a possible remainder value */Math.ceil(valueVariation / this._modifier);
+            this.steps = /* ceil to treat a possible remainder value */Math.ceil(valueVariation / this._modifier);
 
             this.valuableArea = this.limit(this.innerAreaSize - this.knotSize, 0);
             this.snapGap = this.valuableArea / this.steps;
