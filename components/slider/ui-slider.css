@@ -51,11 +51,5 @@ span.ui { /* inline components */
 .ui.slider .knot {
     width: 20px;
     height: 20px;
-<<<<<<< HEAD
     background-color: gainsboro;
 }
-=======
-    background: gray;
-    border-radius: 10px;
-}
->>>>>>> 7008e22991167e503c5157a138eb0c4591bc6a2b
