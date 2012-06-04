@@ -188,8 +188,8 @@
             case this.eventMove:
                  return this.onMove(e);
             case this.eventEnd:
-            case this.eventCancel:
-            case this.eventLeave:
+            //case this.eventCancel:
+            //case this.eventLeave:
                 return this.onEnd(e);
             }
 
@@ -200,7 +200,7 @@
             this.globalOffset = this._vertical ? offset.y : offset.x;
             this.onMove(e);
             document.addEventListener(this.eventEnd, this, false);
-            document.addEventListener(this.eventMove, this, false);
+            window.addEventListener(this.eventMove, this, false);
         },
 
         onMove: function(e) {
@@ -219,7 +219,7 @@
         },
         
         _removeVolatileListeners: function() {
-            document.removeEventListener(this.eventMove, this, false);
+            window.removeEventListener(this.eventMove, this, false);
             document.removeEventListener(this.eventEnd, this, false);    
         },
 
