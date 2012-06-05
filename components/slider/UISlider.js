@@ -268,7 +268,7 @@
         limit: function(num, min, max) {
             // Tip: NaN < 0 === false and NaN > 0 === false
             // this order avoids NaN
-            max = typeof max === 'number' ? max : Infinity;
+            max = typeof max === 'number' ? max : Number.MAX_VALUE;
             return num > max ? max : min < num ? num : min;
         },
 
