@@ -70,7 +70,7 @@
 
         hasTouch: 'ontouchend' in window,
 
-        // DEFAULT VALUES (underscored cause of getters and setters)
+        // DEFAULT VALUES (underscored for use on getters and setters)
         _value: 0,
         _max: 100,
         _min: 0,
