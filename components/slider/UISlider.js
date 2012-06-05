@@ -173,16 +173,13 @@
 
         redraw: function(skip) {
             if (skip) return;
-            var that = this;
             this._requestBrowserRedraw(function() {
-                var className = that.slider.className;
-                className = className.replace(/\b\s*disabled\b/, '');
-                if (that._disabled) className += ' disabled';
-                that.slider.className = className;
+                var className = this.slider.className.replace(/\b\s*disabled\b/, '');
+                if (this._disabled) className += ' disabled';
+                this.slider.className = className;
                 
-                that.knotStyle.cssText = (that._vertical ? 'top:' : 'left: ') + (that.knotPosition >> 0) + 'px';
-                that.fillerStyle.cssText = (that._vertical ? 'height:' : 'width: ') + (that.knotPosition + that.knotHalfSize >> 0) + 'px';
-                that = null; // avoids scope counting leak
+                this.knotStyle.cssText = (this._vertical ? 'top:' : 'left: ') + (this.knotPosition >> 0) + 'px';
+                this.fillerStyle.cssText = (this._vertical ? 'height:' : 'width: ') + (this.knotPosition + this.knotHalfSize >> 0) + 'px';
             });
         },
 
@@ -277,7 +274,7 @@
                 this.redrawLocked = true;
                 var that = this;
                 this._requestAnimFrame(function(time) {
-                    if (callback) callback(time);
+                    if (callback) callback.call(that, time);
                     that.redrawLocked = callback = false; // avoids memory leak
                 });
             }
