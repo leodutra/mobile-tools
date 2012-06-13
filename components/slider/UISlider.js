@@ -198,26 +198,26 @@
 
             switch (e.type) {
             case this.eventStart:
-                return this.onStart(e);
+                return this._onStart(e);
             case this.eventMove:
-                return this.onMove(e);
+                return this._onMove(e);
             case this.eventEnd:
                 //case this.eventCancel:
                 //case this.eventLeave:
-                return this.onEnd(e);
+                return this._onEnd(e);
             }
 
         },
 
-        onStart: function(e) {
+        _onStart: function(e) {
             var offset = this.getGlobalOffset(this.slider);
             this.globalOffset = this._vertical ? offset.y : offset.x;
-            this.onMove(e);
+            this._onMove(e);
             document.addEventListener(this.eventEnd, this, false);
             window.addEventListener(this.eventMove, this, false);
         },
 
-        onMove: function(e) {
+        _onMove: function(e) {
             if (this._disabled) return;
             var pointerRelativePosition = this.limit((this._vertical ?  e.pageY : e.pageX) - this.globalOffset - this.knotHalfSize, 0, this.valuableArea);
             var stepsFromOrigin = Math.round(pointerRelativePosition / this.snapGap);
@@ -229,8 +229,9 @@
             this.redraw();
         },
 
-        onEnd: function(e) {
+        _onEnd: function(e) {
             this._removeVolatileListeners();
+            if (typeof this.onEnd ==='function') this.onEnd();
         },
 
         _removeVolatileListeners: function() {
