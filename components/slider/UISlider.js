@@ -231,7 +231,7 @@
 
         _onEnd: function(e) {
             this._removeVolatileListeners();
-            if (typeof this.onEnd ==='function') this.onEnd();
+            if (typeof this.onEnd ==='function') this.onEnd(this._value);
         },
 
         _removeVolatileListeners: function() {
