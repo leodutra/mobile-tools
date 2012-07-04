@@ -3,30 +3,30 @@
     <head>
         <title></title>
         <style>
-    	
+
     		* {
     			margin: 0;
     			padding: 0;
     		}
-    	
+
     	</style>
     </head>
     <body>
         <input type="text" id="one" data-mask="(99) 9999-9999 xxxx"/>
         <script src="http://code.jquery.com/jquery-1.7.2.js"></script>
         <script>
-            
-            jQuery.fn.mask = function(mask) {
+
+            jQuery.fn.mask = function (mask) {
                 if (mask) this.attr('data-mask', mask);
                 this.unmask();
-                this.get(0).addEventListener('textInput', this.mask.listener,false);
+                this.get(0).addEventListener('textInput', this.mask.listener, false);
             };
-            
-            jQuery.fn.unmask = function() {
-                this.get(0).removeEventListener('textInput', this.mask.listener,false);
-            };         
-            
-            jQuery.fn.mask.listener = function(e) {
+
+            jQuery.fn.unmask = function () {
+                this.get(0).removeEventListener('textInput', this.mask.listener, false);
+            };
+
+            jQuery.fn.mask.listener = function (e) {
                 e.stopPropagation();
                 var mask = this.getAttribute('data-mask');
                 if (mask) {
@@ -36,25 +36,25 @@
                     var dL = data.length;
                     var mL = mask.length;
                     for (var i = 0, j; i < dL; ++i) { // for each char in "data"
-                        for (j = value.length; j < mL; ++j) { 
-                            switch(mask.charAt(j)) {
-                                case '9':
-                                    if (!isNaN(Number(data.charAt(i)))) value += data.charAt(i);
-                                    j = mL;
-                                    break;
-                                case 'x':
-                                    if (/^[A-z\u00C0-\u00ff]$/.test(data.charAt(i))) value += data.charAt(i);
-                                    j = mL;
-                                    break;
-                                default:
-                                    value += mask.charAt(j);
+                        for (j = value.length; j < mL; ++j) {
+                            switch (mask.charAt(j)) {
+                            case '9':
+                                if (!isNaN(Number(data.charAt(i)))) value += data.charAt(i);
+                                j = mL;
+                                break;
+                            case 'x':
+                                if (/^[A-z\u00C0-\u00ff]$/.test(data.charAt(i))) value += data.charAt(i);
+                                j = mL;
+                                break;
+                            default:
+                                value += mask.charAt(j);
                             }
                         }
                     }
                     this.value = value;
                 }
             };
-            
+
             $('#one').mask();
 
         </script>
