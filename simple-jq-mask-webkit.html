@@ -16,17 +16,22 @@
         <script src="http://code.jquery.com/jquery-1.7.2.js"></script>
         <script>
 
-            jQuery.fn.mask = function (mask) {
-                if (mask) this.attr('data-mask', mask);
-                this.unmask();
-                this.get(0).addEventListener('textInput', this.mask.listener, false);
+            jQuery.fn.mask = function(mask) {
+                this.each(function() {
+                    if (mask) this.setAttribute('data-mask', mask);
+                    $(this).unmask();
+                    this.addEventListener('textInput', jQuery.fn.mask.listener,false);
+                });
+                mask = null;
             };
 
-            jQuery.fn.unmask = function () {
-                this.get(0).removeEventListener('textInput', this.mask.listener, false);
+            jQuery.fn.unmask = function() {
+                this.each(function() {
+                    this.removeEventListener('textInput', jQuery.fn.mask.listener,false);
+                });
             };
 
-            jQuery.fn.mask.listener = function (e) {
+            jQuery.fn.mask.listener = function(e) {
                 e.stopPropagation();
                 var mask = this.getAttribute('data-mask');
                 if (mask) {
@@ -37,21 +42,21 @@
                     var mL = mask.length;
                     for (var i = 0, j; i < dL; ++i) { // for each char in "data"
                         for (j = value.length; j < mL; ++j) {
-                            switch (mask.charAt(j)) {
-                            case '9':
-                                if (!isNaN(Number(data.charAt(i)))) value += data.charAt(i);
-                                j = mL;
-                                break;
-                            case 'x':
-                                if (/^[A-z\u00C0-\u00ff]$/.test(data.charAt(i))) value += data.charAt(i);
-                                j = mL;
-                                break;
-                            case '*':
-                                if (/^[A-z0-9\u00C0-\u00ff]$/.test(data.charAt(i))) value += data.charAt(i);
-                                j = mL;
-                                break;
-                            default:
-                                value += mask.charAt(j);
+                            switch(mask.charAt(j)) {
+                                case '9':
+                                    if (!isNaN(Number(data.charAt(i)))) value += data.charAt(i);
+                                    j = mL;
+                                    break;
+                                case 'x':
+                                    if (/^[A-z\u00C0-\u00ff]$/.test(data.charAt(i))) value += data.charAt(i);
+                                    j = mL;
+                                    break;
+                                case '*':
+                                    if (/^[A-z0-9\u00C0-\u00ff]$/.test(data.charAt(i))) value += data.charAt(i);
+                                    j = mL;
+                                    break;
+                                default:
+                                    value += mask.charAt(j);
                             }
                         }
                     }
