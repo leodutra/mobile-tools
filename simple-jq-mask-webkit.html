@@ -46,6 +46,10 @@
                                 if (/^[A-z\u00C0-\u00ff]$/.test(data.charAt(i))) value += data.charAt(i);
                                 j = mL;
                                 break;
+                            case '*':
+                                if (/^[A-z0-9\u00C0-\u00ff]$/.test(data.charAt(i))) value += data.charAt(i);
+                                j = mL;
+                                break;
                             default:
                                 value += mask.charAt(j);
                             }
