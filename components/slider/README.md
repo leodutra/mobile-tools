@@ -11,4 +11,4 @@
     - destroy():void
 
 ### Overridables
-    - onEnd(value:Number) // fired when user finished sliding
+    - onEnd(value:Number) // fired when user finishes sliding
