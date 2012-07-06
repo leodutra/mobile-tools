@@ -16,15 +16,17 @@
             var i = sliders.length;
             var objs = [];
             while (i--) {
-                objs[i] = new UISlider(sliders[i], 5, 20, 0, 1, sliders[i].getAttribute('data-snapping')=='true', function(value){document.getElementById('info').innerHTML = value}, false, sliders[i].getAttribute('data-disabled')=='true');
+                objs[i] = new UISlider(sliders[i], 5, 20, 0, 1, sliders[i].getAttribute('data-snapping') == 'true', function (value) {
+                    document.getElementById('info').innerHTML = log(value);
+                }, false, sliders[i].getAttribute('data-disabled') == 'true');
             }
 
-            function log(str){
+            function log(str) {
                 var log = document.getElementById('log');
                 log.innerHTML = str + '<br />' + log.innerHTML;
+                return str;
             }
 
-            console.log = log;
         </script>
     </body>
 </html>

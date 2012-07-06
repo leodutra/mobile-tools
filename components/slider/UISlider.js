@@ -27,7 +27,7 @@
 	OTHER DEALINGS IN THE SOFTWARE.
  */
 
-(function(window) {
+(function (window) {
 
     "use strict"; // Strict Mode compilant
 
@@ -43,9 +43,9 @@
             if (typeof max === 'number') this._max = max;
             if (typeof initialValue === 'number') this._value = initialValue;
             if (typeof valueCallback === 'function') this.valueCallback = valueCallback;
-            if (typeof snapping==='boolean') this._snapping = snapping;
-            if (typeof vertical==='boolean') this._vertical = vertical;
-            if (typeof disabled==='boolean') this._disabled = disabled;
+            if (typeof snapping === 'boolean') this._snapping = snapping;
+            if (typeof vertical === 'boolean') this._vertical = vertical;
+            if (typeof disabled === 'boolean') this._disabled = disabled;
 
             // INNER AREA
             var innerArea = this.innerArea = slider.appendChild(document.createElement('div')); // needs append to get offsets
@@ -103,9 +103,9 @@
         eventLeave: 'touchleave',
 
         // REDRAW LOCK
-        redrawLocked: false,
+        redrawLocked: null,
 
-        update: function(skipRedraw) {
+        update: function (skipRedraw) {
             this.innerAreaSize = this._vertical ? this.innerArea.offsetHeight : this.innerArea.offsetWidth;
             this.knotSize = this._vertical ? this.knot.offsetHeight : this.knot.offsetWidth;
             this.knotHalfSize = this.knotSize * 0.5;
@@ -119,15 +119,15 @@
             this.value(this._value, skipRedraw);
         },
 
-        snapping: function(bool, skipRedraw) {
-            if (typeof bool==='boolean') {
+        snapping: function (bool, skipRedraw) {
+            if (typeof bool === 'boolean') {
                 this._snapping = bool;
                 this.update(skipRedraw);
             }
             return this._snapping;
         },
 
-        max: function(max, skipRedraw) {
+        max: function (max, skipRedraw) {
             if (typeof max === 'number') {
                 this._max = max;
                 this.update(skipRedraw);
@@ -135,7 +135,7 @@
             return this._max;
         },
 
-        min: function(min, skipRedraw) {
+        min: function (min, skipRedraw) {
             if (typeof min === 'number') {
                 this._min = min;
                 this.update(skipRedraw);
@@ -143,15 +143,15 @@
             return this._min;
         },
 
-        vertical: function(bool, skipRedraw) {
-            if (typeof bool==='boolean') {
+        vertical: function (bool, skipRedraw) {
+            if (typeof bool === 'boolean') {
                 this._vertical = bool;
                 this.update(skipRedraw);
             }
             return this._vertical;
         },
 
-        value: function(value, skipRedraw) {
+        value: function (value, skipRedraw) {
             var variableValue = (typeof value == 'number' ? value : this._value) - this._min;
             var stepsFromOrigin = Math.round(variableValue / this._modifier);
 
@@ -163,17 +163,17 @@
             return this._value;
         },
 
-        disabled: function(bool, skipRedraw) {
-            if (typeof bool==='boolean') {
+        disabled: function (bool, skipRedraw) {
+            if (typeof bool === 'boolean') {
                 this._disabled = bool;
                 this.update(skipRedraw);
             }
             return this._disabled;
         },
 
-        redraw: function(skip) {
+        redraw: function (skip) {
             if (skip) return;
-            this._requestBrowserRedraw(function() {
+            this._requestBrowserRedraw(function () {
                 var className = this.slider.className.replace(/\b\s*disabled\b/, '');
                 if (this._disabled) className += ' disabled';
                 this.slider.className = className;
@@ -184,7 +184,7 @@
         },
 
         // GENERAL EVENT HANDLER
-        handleEvent: function(e) {
+        handleEvent: function (e) {
             e.preventDefault();
             e.stopPropagation();
 
@@ -197,19 +197,19 @@
             }
 
             switch (e.type) {
-                case this.eventStart:
-                    return this._onStart(e);
-                case this.eventMove:
-                    return this._onMove(e);
-                case this.eventEnd:
-                    //case this.eventCancel:
-                    //case this.eventLeave:
-                    return this._onEnd(e);
+            case this.eventStart:
+                return this._onStart(e);
+            case this.eventMove:
+                return this._onMove(e);
+            case this.eventEnd:
+                //case this.eventCancel:
+                //case this.eventLeave:
+                return this._onEnd(e);
             }
 
         },
 
-        _onStart: function(e) {
+        _onStart: function (e) {
             var offset = this.getGlobalOffset(this.slider);
             this.globalOffset = this._vertical ? offset.y : offset.x;
             this._onMove(e);
@@ -217,9 +217,9 @@
             window.addEventListener(this.eventMove, this, false);
         },
 
-        _onMove: function(e) {
+        _onMove: function (e) {
             if (this._disabled) return;
-            var pointerRelativePosition = this.limit((this._vertical ?  e.touches[0].pageY : e.touches[0].pageX) - this.globalOffset - this.knotHalfSize, 0, this.valuableArea);
+            var pointerRelativePosition = this.limit((this._vertical ? e.touches[0].pageY : e.touches[0].pageX) - this.globalOffset - this.knotHalfSize, 0, this.valuableArea);
             var stepsFromOrigin = Math.round(pointerRelativePosition / this.snapGap);
             this._value = this.limit(stepsFromOrigin * this._modifier + this._min, this._min, this._max);
             if (this.valueCallback) this.valueCallback(this._value);
@@ -228,17 +228,17 @@
             this.redraw();
         },
 
-        _onEnd: function(e) {
+        _onEnd: function (e) {
             this._removeVolatileListeners();
-            if (typeof this.onEnd ==='function') this.onEnd(this._value);
+            if (typeof this.onEnd === 'function') this.onEnd(this._value);
         },
 
-        _removeVolatileListeners: function() {
+        _removeVolatileListeners: function () {
             window.removeEventListener(this.eventMove, this, false);
             document.removeEventListener(this.eventEnd, this, false);
         },
 
-        destroy: function() {
+        destroy: function () {
             this._removeVolatileListeners();
             document.removeEventListener(this.eventStart, this, false);
             var slider = this.slider;
@@ -248,7 +248,7 @@
             this.slider = this.knot = this.knotStyle = this.fillerStyle = this.valueCallback = this.innerArea = slider = null;
         },
 
-        getGlobalOffset: function(el) {
+        getGlobalOffset: function (el) {
             var x = 0;
             var y = 0;
             while (el) {
@@ -262,26 +262,24 @@
             };
         },
 
-        limit: function(num, min, max) {
+        limit: function (num, min, max) {
             // Tip: NaN < 0 === false and NaN > 0 === false
             // this order avoids NaN
-            max = typeof max === 'number' ? max : Number.MAX_VALUE;
-            return num > max ? max : min < num ? num : min;
+            return max > min && num > max ? max : min < num ? num : min;
         },
 
-        _requestBrowserRedraw: function(callback) {
-            if (!this.redrawLocked) {
-                this.redrawLocked = true;
-                var that = this;
-                this._requestAnimFrame(function(time) {
-                    if (callback) callback.call(that, time);
-                    that.redrawLocked = callback = false; // avoids memory leak
-                });
-            }
+        _requestBrowserRedraw: function (callback) {
+            if (this.redrawLocked) return;
+            this.redrawLocked = 1;
+            var that = this;
+            this._requestAnimFrame(function (time) {
+                if (callback) callback.call(that, time);
+                that = that.redrawLocked = callback = null; // avoids scope leak
+            });
         },
 
-        _requestAnimFrame: function(callback) {
-            window.setTimeout(callback, 17);
+        _requestAnimFrame: function (callback) {
+            window.setTimeout(callback, 22);
         }
     };
 
