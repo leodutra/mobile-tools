@@ -1,10 +1,10 @@
 /*
     Moby Tools UISlider
     (https://github.com/LeoDutra/Moby-Tools/tree/master/components/slider)
-	
+
 	MIT License:
 	Copyright (c) 2012 Leonardo Dutra Constancio
-	 
+
 	Permission is hereby granted, free of charge, to any person
 	obtaining a copy of this software and associated documentation
 	files (the "Software"), to deal in the Software without
@@ -13,10 +13,10 @@
 	copies of the Software, and to permit persons to whom the
 	Software is furnished to do so, subject to the following
 	conditions:
-	 
+
 	The above copyright notice and this permission notice shall be
 	included in all copies or substantial portions of the Software.
-	 
+
 	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 	EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
 	OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -118,7 +118,7 @@
 
             this.value(this._value, skipRedraw);
         },
-        
+
         snapping: function(bool, skipRedraw) {
             if (typeof bool==='boolean') {
                 this._snapping = bool;
@@ -142,7 +142,7 @@
             }
             return this._min;
         },
-        
+
         vertical: function(bool, skipRedraw) {
             if (typeof bool==='boolean') {
                 this._vertical = bool;
@@ -162,7 +162,7 @@
             this.redraw(skipRedraw);
             return this._value;
         },
-        
+
         disabled: function(bool, skipRedraw) {
             if (typeof bool==='boolean') {
                 this._disabled = bool;
@@ -177,7 +177,7 @@
                 var className = this.slider.className.replace(/\b\s*disabled\b/, '');
                 if (this._disabled) className += ' disabled';
                 this.slider.className = className;
-                
+
                 this.knotStyle.cssText = (this._vertical ? 'top:' : 'left: ') + (this.knotPosition >> 0) + 'px';
                 this.fillerStyle.cssText = (this._vertical ? 'height:' : 'width: ') + (this.knotPosition + this.knotHalfSize >> 0) + 'px';
             });
@@ -197,14 +197,14 @@
             }
 
             switch (e.type) {
-            case this.eventStart:
-                return this._onStart(e);
-            case this.eventMove:
-                return this._onMove(e);
-            case this.eventEnd:
-                //case this.eventCancel:
-                //case this.eventLeave:
-                return this._onEnd(e);
+                case this.eventStart:
+                    return this._onStart(e);
+                case this.eventMove:
+                    return this._onMove(e);
+                case this.eventEnd:
+                    //case this.eventCancel:
+                    //case this.eventLeave:
+                    return this._onEnd(e);
             }
 
         },
@@ -219,9 +219,8 @@
 
         _onMove: function(e) {
             if (this._disabled) return;
-            var pointerRelativePosition = this.limit((this._vertical ?  e.pageY : e.pageX) - this.globalOffset - this.knotHalfSize, 0, this.valuableArea);
+            var pointerRelativePosition = this.limit((this._vertical ?  e.touches[0].pageY : e.touches[0].pageX) - this.globalOffset - this.knotHalfSize, 0, this.valuableArea);
             var stepsFromOrigin = Math.round(pointerRelativePosition / this.snapGap);
-
             this._value = this.limit(stepsFromOrigin * this._modifier + this._min, this._min, this._max);
             if (this.valueCallback) this.valueCallback(this._value);
 

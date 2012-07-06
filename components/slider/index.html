@@ -8,15 +8,23 @@
         <span class="ui slider" data-snapping="true"></span>
         <span class="ui slider" data-snapping="false"></span>
         <span class="ui slider" data-snapping="false" data-disabled="true"></span>
+        <div id="log" style="height: 400px; overflow-y: scroll; font-size: 11px;"></div>
         <script src="UISlider.js"></script>
         <script>
-        
+
             var sliders = document.getElementsByClassName('slider');
             var i = sliders.length;
             var objs = [];
             while (i--) {
                 objs[i] = new UISlider(sliders[i], 5, 20, 0, 1, sliders[i].getAttribute('data-snapping')=='true', function(value){document.getElementById('info').innerHTML = value}, false, sliders[i].getAttribute('data-disabled')=='true');
             }
+
+            function log(str){
+                var log = document.getElementById('log');
+                log.innerHTML = str + '<br />' + log.innerHTML;
+            }
+
+            console.log = log;
         </script>
     </body>
 </html>
