@@ -9,6 +9,6 @@
     - disabled(bool:Boolean, skipRedraw:Boolean):Boolean
     - redraw(skip:Boolean):void
     - destroy():void
-    
-### Overrides
+
+### Overridables
     - onEnd(value:Number) // fired when user finished sliding
