@@ -78,6 +78,7 @@
         _snapping: false,
         _vertical: false,
         _disabled: false,
+        _lastDisabled: false,
         valueCallback: null,
 
         // VARS
@@ -152,10 +153,11 @@
         },
 
         value: function (value, skipRedraw) {
-            var variableValue = (typeof value == 'number' ? value : this._value) - this._min;
+            var min = this._min;
+            var variableValue = (typeof value == 'number' ? value : this._value) - min;
             var stepsFromOrigin = Math.round(variableValue / this._modifier);
 
-            this._value = this.limit(stepsFromOrigin * this._modifier + this._min, this._min, this._max);
+            this._value = this.limit(stepsFromOrigin * this._modifier + min, min, this._max);
             if (this.valueCallback) this.valueCallback(this._value);
 
             this.knotPosition = this.limit(stepsFromOrigin * this.snapGap, 0, this.valuableArea);
@@ -174,12 +176,24 @@
         redraw: function (skip) {
             if (skip) return;
             this._requestBrowserRedraw(function () {
-                var className = this.slider.className.replace(/\b\s*disabled\b/, '');
-                if (this._disabled) className += ' disabled';
-                this.slider.className = className;
 
-                this.knotStyle.cssText = (this._vertical ? 'top:' : 'left: ') + (this.knotPosition >> 0) + 'px';
-                this.fillerStyle.cssText = (this._vertical ? 'height:' : 'width: ') + (this.knotPosition + this.knotHalfSize >> 0) + 'px';
+                if (this._lastDisabled !== this._disabled) {
+                    if ((this._lastDisabled = this._disabled)) {
+                        this.slider.className += ' disabled';
+                    }
+                    else {
+                        this.slider.className = this.slider.className.replace(/\bdisabled\b/, '');
+                    }
+                }
+
+                if (this._vertical) {
+                    this.knotStyle.top = (this.knotPosition >> 0) + 'px';
+                    this.fillerStyle.height = (this.knotPosition + this.knotHalfSize >> 0) + 'px';
+                }
+                else {
+                    this.knotStyle.left = (this.knotPosition >> 0) + 'px';
+                    this.fillerStyle.width = (this.knotPosition + this.knotHalfSize >> 0) + 'px';
+                }
             });
         },
 
@@ -265,7 +279,7 @@
         limit: function (num, min, max) {
             // Tip: NaN < 0 === false and NaN > 0 === false
             // this order avoids NaN
-            return max > min && num > max ? max : min < num ? num : min;
+            return num > max ? max : min < num ? num : min;
         },
 
         _requestBrowserRedraw: function (callback) {
