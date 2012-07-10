@@ -69,8 +69,6 @@
     UISlider.prototype = {
 
         hasTouch: 'ontouchend' in window,
-        _has3d: 'WebKitCSSMatrix' in window && 'm11' in new WebKitCSSMatrix(),
-        _hasTransform: 'webkitTransform' in document.documentElement.style,
 
         // DEFAULT VALUES (underscored for use on getters and setters)
         _value: 0,
@@ -192,21 +190,11 @@
                 }
 
                 if (this._vertical) {
-                    if (this._hasTransform) {
-                        this.knotStyle.webkitTransform = 'translate' + (this._has3d ? '3d(0, ' : '(0, ') + (this.knotPosition >> 0) + 'px' +', 0)';
-                    }
-                    else {
-                        this.knotStyle.top = (this.knotPosition >> 0) + 'px';
-                    }
+                    this.knotStyle.top = (this.knotPosition >> 0) + 'px';
                     this.fillerStyle.height = (this.knotPosition + this.knotHalfSize >> 0) + 'px';
                 }
                 else {
-                    if (this._hasTransform) {
-                        this.knotStyle.webkitTransform = 'translate' + (this._has3d ? '3d(' : '(') + (this.knotPosition >> 0) + 'px' +', 0, 0)';
-                    }
-                    else {
-                        this.knotStyle.left = (this.knotPosition >> 0) + 'px';
-                    }
+                    this.knotStyle.left = (this.knotPosition >> 0) + 'px';
                     this.fillerStyle.width = (this.knotPosition + this.knotHalfSize >> 0) + 'px';
                 }
             });
