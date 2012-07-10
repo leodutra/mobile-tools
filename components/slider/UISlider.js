@@ -69,6 +69,8 @@
     UISlider.prototype = {
 
         hasTouch: 'ontouchend' in window,
+        _has3d: 'WebKitCSSMatrix' in window && 'm11' in new WebKitCSSMatrix(),
+        _hasTransform: 'webkitTransform' in document.documentElement.style,
 
         // DEFAULT VALUES (underscored for use on getters and setters)
         _value: 0,
@@ -85,7 +87,6 @@
         globalOffset: 0,
         steps: 0,
         snapGap: 0,
-        knotSize: 0,
         knotHalfSize: 0,
         knotPosition: 0,
         valuableArea: 0,
@@ -107,15 +108,19 @@
         redrawLocked: null,
 
         update: function (skipRedraw) {
-            this.innerAreaSize = this._vertical ? this.innerArea.offsetHeight : this.innerArea.offsetWidth;
-            this.knotSize = this._vertical ? this.knot.offsetHeight : this.knot.offsetWidth;
-            this.knotHalfSize = this.knotSize * 0.5;
-            var valueVariation = this._max - this._min;
-            this.steps = /* ceil to treat a possible remainder value */
-            Math.ceil(valueVariation / this._modifier);
+            var knotSize;
+            if (this._vertical) {
+                this.innerAreaSize = this.innerArea.offsetHeight;
+                knotSize = this.knot.offsetHeight;
+            }
+            else {
+                this.innerAreaSize = this.innerArea.offsetWidth;
+                knotSize = this.knot.offsetWidth;
+            }
 
-            this.valuableArea = this.limit(this.innerAreaSize - this.knotSize, 0);
-            this.snapGap = this.valuableArea / this.steps;
+            this.knotHalfSize = knotSize * 0.5;
+
+            this.snapGap = (this.valuableArea = this.limit(this.innerAreaSize - knotSize, 0)) / (this.steps = Math.ceil(this._max - this._min / this._modifier));
 
             this.value(this._value, skipRedraw);
         },
@@ -187,11 +192,21 @@
                 }
 
                 if (this._vertical) {
-                    this.knotStyle.top = (this.knotPosition >> 0) + 'px';
+                    if (this._hasTransform) {
+                        this.knotStyle.webkitTransform = 'translate' + (this._has3d ? '3d(0, ' : '(0, ') + (this.knotPosition >> 0) + 'px' +', 0)';
+                    }
+                    else {
+                        this.knotStyle.top = (this.knotPosition >> 0) + 'px';
+                    }
                     this.fillerStyle.height = (this.knotPosition + this.knotHalfSize >> 0) + 'px';
                 }
                 else {
-                    this.knotStyle.left = (this.knotPosition >> 0) + 'px';
+                    if (this._hasTransform) {
+                        this.knotStyle.webkitTransform = 'translate' + (this._has3d ? '3d(' : '(') + (this.knotPosition >> 0) + 'px' +', 0, 0)';
+                    }
+                    else {
+                        this.knotStyle.left = (this.knotPosition >> 0) + 'px';
+                    }
                     this.fillerStyle.width = (this.knotPosition + this.knotHalfSize >> 0) + 'px';
                 }
             });
