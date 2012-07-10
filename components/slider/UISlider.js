@@ -118,7 +118,7 @@
 
             this.knotHalfSize = knotSize * 0.5;
 
-            this.snapGap = (this.valuableArea = this.limit(this.innerAreaSize - knotSize, 0)) / (this.steps = Math.ceil(this._max - this._min / this._modifier));
+            this.snapGap = (this.valuableArea = this.limit(this.innerAreaSize - knotSize, 0)) / (this.steps = Math.ceil((this._max - this._min) / this._modifier));
 
             this.value(this._value, skipRedraw);
         },
