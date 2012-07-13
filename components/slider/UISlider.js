@@ -57,9 +57,9 @@
             this.fillerStyle = filler.style;
 
             // KNOT
-            this.knot = innerArea.appendChild(document.createElement('div')); // needs append to get offsets
-            this.knot.className = 'knot';
-            this.knotStyle = this.knot.style;
+            var knot = this.knot = innerArea.appendChild(document.createElement('div')); // needs append to get offsets
+            knot.className = 'knot';
+            this.knotStyle = knot.style;
 
             this.update();
             this.slider.addEventListener(this.eventStart, this, false);
@@ -106,6 +106,11 @@
         redrawLocked: null,
 
         update: function (skipRedraw) {
+            this._updateSizes();
+            this.value(this._value, skipRedraw);
+        },
+        
+        _updateSizes: function() {
             var knotSize;
             if (this._vertical) {
                 this.innerAreaSize = this.innerArea.offsetHeight;
@@ -115,12 +120,8 @@
                 this.innerAreaSize = this.innerArea.offsetWidth;
                 knotSize = this.knot.offsetWidth;
             }
-
-            this.knotHalfSize = knotSize * 0.5;
-
-            this.snapGap = (this.valuableArea = this.limit(this.innerAreaSize - knotSize, 0)) / (this.steps = Math.ceil((this._max - this._min) / this._modifier));
-
-            this.value(this._value, skipRedraw);
+            this.knotHalfSize = 0.5 * knotSize;
+            this.snapGap = (this.valuableArea = Math.max(this.innerAreaSize - knotSize, 0)) / (this.steps = Math.ceil((this._max - this._min) / this._modifier));  
         },
 
         snapping: function (bool, skipRedraw) {
@@ -229,6 +230,7 @@
         _onStart: function (e) {
             var offset = this.getGlobalOffset(this.slider);
             this.globalOffset = this._vertical ? offset.y : offset.x;
+            this._updateSizes();
             this._onMove(e);
             document.addEventListener(this.eventEnd, this, false);
             window.addEventListener(this.eventMove, this, false);
