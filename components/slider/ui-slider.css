@@ -55,5 +55,5 @@ span.ui { /* inline components */
 }
 
 .ui.slider.disabled .knot {
-    background-color: #333;   
+    background-color: gray;   
 }
