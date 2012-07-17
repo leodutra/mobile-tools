@@ -2,29 +2,57 @@
     Moby Tools UISlider
     (https://github.com/LeoDutra/Moby-Tools/tree/master/components/slider)
 
-	MIT License:
-	Copyright (c) 2012 Leonardo Dutra Constancio
+    MIT License:
+    Copyright (c) 2012 Leonardo Dutra Constancio
 
-	Permission is hereby granted, free of charge, to any person
-	obtaining a copy of this software and associated documentation
-	files (the "Software"), to deal in the Software without
-	restriction, including without limitation the rights to use,
-	copy, modify, merge, publish, distribute, sublicense, and/or sell
-	copies of the Software, and to permit persons to whom the
-	Software is furnished to do so, subject to the following
-	conditions:
+    Permission is hereby granted, free of charge, to any person
+    obtaining a copy of this software and associated documentation
+    files (the "Software"), to deal in the Software without
+    restriction, including without limitation the rights to use,
+    copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the
+    Software is furnished to do so, subject to the following
+    conditions:
 
-	The above copyright notice and this permission notice shall be
-	included in all copies or substantial portions of the Software.
+    The above copyright notice and this permission notice shall be
+    included in all copies or substantial portions of the Software.
 
-	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-	EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
-	OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-	NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-	HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-	WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-	FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-	OTHER DEALINGS IN THE SOFTWARE.
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+    OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+    NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+    HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+    WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+    OTHER DEALINGS IN THE SOFTWARE.
+ */
+/*
+    Moby Tools UISlider
+    (https://github.com/LeoDutra/Moby-Tools/tree/master/components/slider)
+
+    MIT License:
+    Copyright (c) 2012 Leonardo Dutra Constancio
+
+    Permission is hereby granted, free of charge, to any person
+    obtaining a copy of this software and associated documentation
+    files (the "Software"), to deal in the Software without
+    restriction, including without limitation the rights to use,
+    copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the
+    Software is furnished to do so, subject to the following
+    conditions:
+
+    The above copyright notice and this permission notice shall be
+    included in all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+    OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+    NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+    HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+    WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+    OTHER DEALINGS IN THE SOFTWARE.
  */
 
 (function (window) {
@@ -103,7 +131,8 @@
         eventLeave: 'touchleave',
 
         // REDRAW LOCK
-        redrawLocked: null,
+        redrawLocked: false,
+        lastTime: 0,
 
         update: function (skipRedraw) {
             this._updateSizes();
@@ -158,8 +187,7 @@
 
         value: function (value, skipRedraw) {
             var min = this._min;
-            var variableValue = (typeof value == 'number' ? value : this._value) - min;
-            var stepsFromOrigin = Math.round(variableValue / this._modifier);
+            var stepsFromOrigin = Math.round(((typeof value == 'number' ? value : this._value) - min) / this._modifier);
 
             this._value = this.limit(stepsFromOrigin * this._modifier + min, min, this._max);
             if (this.valueCallback) this.valueCallback(this._value);
@@ -177,34 +205,12 @@
             return this._disabled;
         },
 
-        redraw: function (skip) {
-            if (skip) return;
-            this._requestBrowserRedraw(function () {
-
-                if (this._lastDisabled !== this._disabled) {
-                    if ((this._lastDisabled = this._disabled)) {
-                        this.slider.className += ' disabled';
-                    }
-                    else {
-                        this.slider.className = this.slider.className.replace(/\bdisabled\b/, '');
-                    }
-                }
-
-                if (this._vertical) {
-                    this.knotStyle.top = (this.knotPosition >> 0) + 'px';
-                    this.fillerStyle.height = (this.knotPosition + this.knotHalfSize >> 0) + 'px';
-                }
-                else {
-                    this.knotStyle.left = (this.knotPosition >> 0) + 'px';
-                    this.fillerStyle.width = (this.knotPosition + this.knotHalfSize >> 0) + 'px';
-                }
-            });
-        },
-
         // GENERAL EVENT HANDLER
         handleEvent: function (e) {
             e.preventDefault();
             e.stopPropagation();
+            
+            if (this._disabled) return;
 
             // smart and optimum force
             if (e.touches === void 0) {
@@ -214,17 +220,12 @@
                 }];
             }
 
-            switch (e.type) {
-            case this.eventStart:
-                return this._onStart(e);
-            case this.eventMove:
-                return this._onMove(e);
-            case this.eventEnd:
-                //case this.eventCancel:
-                //case this.eventLeave:
-                return this._onEnd(e);
-            }
-
+            if (e.type === this.eventMove) 
+                this._onMove(e);
+            else if (e.type === this.eventStart) 
+                this._onStart(e);
+            else if (e.type === this.eventEnd) 
+                this._onEnd(e);
         },
 
         _onStart: function (e) {
@@ -237,7 +238,6 @@
         },
 
         _onMove: function (e) {
-            if (this._disabled) return;
             var pointerRelativePosition = this.limit((this._vertical ? e.touches[0].pageY : e.touches[0].pageX) - this.globalOffset - this.knotHalfSize, 0, this.valuableArea);
             var stepsFromOrigin = Math.round(pointerRelativePosition / this.snapGap);
             this._value = this.limit(stepsFromOrigin * this._modifier + this._min, this._min, this._max);
@@ -249,12 +249,33 @@
 
         _onEnd: function (e) {
             this._removeVolatileListeners();
-            if (typeof this.onEnd === 'function') this.onEnd(this._value);
+            if (this.onEnd) this.onEnd(this._value);
         },
 
         _removeVolatileListeners: function () {
             window.removeEventListener(this.eventMove, this, false);
             document.removeEventListener(this.eventEnd, this, false);
+        },
+        
+        redraw: function (skip) {
+            if (skip) return;
+            if (this._lastDisabled !== this._disabled) {
+                if ((this._lastDisabled = this._disabled)) {
+                    this.slider.className += ' disabled';
+                }
+                else {
+                    this.slider.className = this.slider.className.replace(/\bdisabled\b/, '');
+                }
+            }
+
+            if (this._vertical) {
+                this.knotStyle.top = (this.knotPosition >> 0) + 'px';
+                this.fillerStyle.height = (this.knotPosition + this.knotHalfSize >> 0) + 'px';
+            }
+            else {
+                this.knotStyle.left = (this.knotPosition >> 0) + 'px';
+                this.fillerStyle.width = (this.knotPosition + this.knotHalfSize >> 0) + 'px';
+            }
         },
 
         destroy: function () {
@@ -264,12 +285,11 @@
             var children = slider.childNodes;
             var i = children.length;
             while (i--) slider.removeChild(children[i]);
-            this.slider = this.knot = this.knotStyle = this.fillerStyle = this.valueCallback = this.innerArea = slider = null;
+            this.slider = this.knot = this.knotStyle = this.fillerStyle = this.valueCallback = this.onEnd = this.innerArea = slider = null;
         },
 
         getGlobalOffset: function (el) {
-            var x = 0;
-            var y = 0;
+            var x = 0, y = 0;
             while (el) {
                 x += el.offsetLeft;
                 y += el.offsetTop;
@@ -285,26 +305,11 @@
             // Tip: NaN < 0 === false and NaN > 0 === false
             // this order avoids NaN
             return num > max ? max : min < num ? num : min;
-        },
-
-        _requestBrowserRedraw: function (callback) {
-            if (this.redrawLocked) return;
-            this.redrawLocked = 1;
-            var that = this;
-            this._requestAnimFrame(function (time) {
-                if (callback) callback.call(that, time);
-                that = that.redrawLocked = callback = null; // avoids scope leak
-            });
-        },
-
-        _requestAnimFrame: function (callback) {
-            window.setTimeout(callback, 22);
         }
     };
 
-
-    // compatibilize event types
     var proto = UISlider.prototype;
+    // compatibilize event types
     if (!proto.hasTouch) {
         proto.eventStart = 'mousedown';
         proto.eventMove = 'mousemove';
