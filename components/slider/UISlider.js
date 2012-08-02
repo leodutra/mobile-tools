@@ -31,7 +31,7 @@
 
     "use strict"; // Strict Mode compilant
 
-    function UISlider(slider, initialValue, max, min, modifier, snapping, valueCallback, vertical, disabled) {
+    function UISlider(slider, initialValue, max, min, modifier, snapping, valueCallback, vertical, disabled, paddingMode) {
         if (this instanceof UISlider && slider && slider.nodeType === 1 /* MUST BE AN ELEMENT */ ) {
             this.slider = slider;
 
@@ -46,6 +46,7 @@
             if (typeof snapping === 'boolean') this._snapping = snapping;
             if (typeof vertical === 'boolean') this._vertical = vertical;
             if (typeof disabled === 'boolean') this._disabled = disabled;
+            if (typeof paddingMode === 'boolean') this._paddingMode = paddingMode;
 
             // INNER AREA
             var innerArea = this.innerArea = slider.appendChild(document.createElement('div')); // needs append to get offsets
@@ -62,6 +63,7 @@
             this.knotStyle = knot.style;
 
             this.update();
+            this.knot.addEventListener(this.eventStart, this, false);
             this.slider.addEventListener(this.eventStart, this, false);
         }
     }
@@ -79,6 +81,7 @@
         _vertical: false,
         _disabled: false,
         _lastDisabled: false,
+        _paddingMode: false,
         valueCallback: null,
 
         // VARS
@@ -110,7 +113,7 @@
             this._updateSizes();
             this.value(this._value, skipRedraw);
         },
-        
+
         _updateSizes: function() {
             var knotSize;
             if (this._vertical) {
@@ -122,7 +125,7 @@
                 knotSize = this.knot.offsetWidth;
             }
             this.knotHalfSize = 0.5 * knotSize;
-            this.snapGap = (this.valuableArea = Math.max(this.innerAreaSize - knotSize, 0)) / (this.steps = Math.ceil((this._max - this._min) / this._modifier));  
+            this.snapGap = (this.valuableArea = Math.max(this.innerAreaSize - knotSize, 0)) / (this.steps = Math.ceil((this._max - this._min) / this._modifier));
         },
 
         snapping: function (bool, skipRedraw) {
@@ -157,6 +160,21 @@
             return this._vertical;
         },
 
+        paddingMode: function (bool) {
+            if (typeof bool === 'boolean') {
+                this._paddingMode = bool;
+            }
+            return this._paddingMode;
+        },
+
+        modifier: function (modifier, skipRedraw) {
+            if (typeof modifier === 'number') {
+                this._modifier = modifier;
+                this.update(skipRedraw);
+            }
+            return this._modifier;
+        },
+
         value: function (value, skipRedraw) {
             var min = this._min;
             var stepsFromOrigin = Math.round(((typeof value == 'number' ? value : this._value) - min) / this._modifier);
@@ -181,7 +199,7 @@
         handleEvent: function (e) {
             e.preventDefault();
             e.stopPropagation();
-            
+
             if (this._disabled) return;
 
             // smart and optimum force
@@ -192,12 +210,29 @@
                 }];
             }
 
-            if (e.type === this.eventMove) 
+            if (e.type === this.eventMove)
                 this._onMove(e);
-            else if (e.type === this.eventStart) 
-                this._onStart(e);
-            else if (e.type === this.eventEnd) 
+            else if (e.type === this.eventStart) {
+                if (e.target === this.knot || !this._paddingMode) {
+                    this._onStart(e);
+                }
+                else {
+                    this._onTap(e);
+                }
+            }
+            else if (e.type === this.eventEnd)
                 this._onEnd(e);
+        },
+
+        _onTap: function(e) {
+            var pos = this.globalOffset + this.knotPosition;
+
+            if ((this._vertical ? e.touches[0].pageY - pos : e.touches[0].pageX - pos) < 0) {
+                this.value(this._value - this._modifier);
+            }
+            else {
+                this.value(this._value + this._modifier);
+            }
         },
 
         _onStart: function (e) {
@@ -228,7 +263,7 @@
             window.removeEventListener(this.eventMove, this, false);
             document.removeEventListener(this.eventEnd, this, false);
         },
-        
+
         redraw: function (skip) {
             if (skip) return;
             if (this._lastDisabled !== this._disabled) {
@@ -252,7 +287,8 @@
 
         destroy: function () {
             this._removeVolatileListeners();
-            document.removeEventListener(this.eventStart, this, false);
+            this.knot.removeEventListener(this.eventStart, this, false);
+            this.slider.removeEventListener(this.eventStart, this, false);
             var slider = this.slider;
             var children = slider.childNodes;
             var i = children.length;
