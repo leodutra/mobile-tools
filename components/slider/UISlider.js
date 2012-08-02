@@ -225,9 +225,7 @@
         },
 
         _onTap: function(e) {
-            var pos = this.globalOffset + this.knotPosition;
-
-            if ((this._vertical ? e.touches[0].pageY - pos : e.touches[0].pageX - pos) < 0) {
+            if ((this._vertical ? e.touches[0].pageY: e.touches[0].pageX) - (this.globalOffset + this.knotPosition) < 0) {
                 this.value(this._value - this._modifier);
             }
             else {
