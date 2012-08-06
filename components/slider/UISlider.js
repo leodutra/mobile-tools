@@ -31,7 +31,7 @@
 
     "use strict"; // Strict Mode compilant
 
-    function UISlider(slider, initialValue, max, min, modifier, snapping, valueCallback, vertical, disabled, paddingMode) {
+    function UISlider(slider, initialValue, max, min, modifier, snapping, valueCallback, vertical, disabled, paddingMode, paddingModifier) {
         if (this instanceof UISlider && slider && slider.nodeType === 1 /* MUST BE AN ELEMENT */ ) {
             this.slider = slider;
 
@@ -47,6 +47,7 @@
             if (typeof vertical === 'boolean') this._vertical = vertical;
             if (typeof disabled === 'boolean') this._disabled = disabled;
             if (typeof paddingMode === 'boolean') this._paddingMode = paddingMode;
+            if (typeof paddingModifier === 'number') this.paddingModifier = paddingModifier;
 
             // INNER AREA
             var innerArea = this.innerArea = slider.appendChild(document.createElement('div')); // needs append to get offsets
@@ -82,6 +83,7 @@
         _disabled: false,
         _lastDisabled: false,
         _paddingMode: false,
+        paddingModifier: 0,
         valueCallback: null,
 
         // VARS
@@ -160,9 +162,12 @@
             return this._vertical;
         },
 
-        paddingMode: function (bool) {
+        paddingMode: function (bool, paddingModifier) {
             if (typeof bool === 'boolean') {
                 this._paddingMode = bool;
+            }
+            if (typeof paddingModifier === 'number') {
+                this.paddingModifier = paddingModifier;
             }
             return this._paddingMode;
         },
@@ -225,14 +230,13 @@
         },
 
         _onTap: function(e) {
-            var pos = this.globalOffset + this.knotPosition;
+            var pos = this.globalOffset + this.knotPosition,
+                mod = (this.paddingModifier || this._modifier);
 
-            if ((this._vertical ? e.touches[0].pageY - pos : e.touches[0].pageX - pos) < 0) {
-                this.value(this._value - this._modifier);
-            }
-            else {
-                this.value(this._value + this._modifier);
-            }
+            if ((this._vertical ? e.touches[0].pageY - pos : e.touches[0].pageX - pos) < 0)
+                this.value(this._value - mod);
+            else
+                this.value(this._value + mod);
         },
 
         _onStart: function (e) {
