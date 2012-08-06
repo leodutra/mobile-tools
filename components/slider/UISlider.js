@@ -230,10 +230,9 @@
         },
 
         _onTap: function(e) {
-            var pos = this.globalOffset + this.knotPosition,
-                mod = (this.paddingModifier || this._modifier);
+            var mod = (this.paddingModifier || this._modifier);
 
-            if ((this._vertical ? e.touches[0].pageY - pos : e.touches[0].pageX - pos) < 0)
+            if ((this._vertical ? e.touches[0].pageY : e.touches[0].pageX) - this.globalOffset - this.knotPosition < 0)
                 this.value(this._value - mod);
             else
                 this.value(this._value + mod);
