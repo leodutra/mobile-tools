@@ -13,7 +13,9 @@ https://c9.io/leodutra/moby-tools/workspace/components/slider/index.html
     - disabled(bool:Boolean, skipRedraw:Boolean):Boolean
     - paddingMode(bool:Boolean, paddingModifier:Number):Boolean
     - redraw(skip:Boolean):void
-    - destroy():void
+    - destroy():void *** 
+    
+    *** Remember to use destroy(), avoiding memory leaks.
 
 ### Overridables
     - onEnd(value:Number) // fired when user finishes sliding
