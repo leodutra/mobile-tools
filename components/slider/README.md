@@ -1,4 +1,7 @@
-### Methods:
+### Demo
+https://c9.io/leodutra/moby-tools/workspace/components/slider/index.html
+
+### Methods
     - Slider(slider, initialValue = 0, max = 100, min = 0, modifier = 1, snapping = false, valueCallback = null, vertical = false, disabled = false, paddingMode = false, paddingModifier:Number)
     - update(skipRedraw:Boolean):void
     - snapping(value:Boolean, skipRedraw:Boolean):Boolean
