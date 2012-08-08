@@ -117,15 +117,18 @@
         },
 
         _updateSizes: function() {
-            var knotSize;
+            var knotSize, offset = this.getGlobalOffset(this.slider);
             if (this._vertical) {
+                offset = offset.y;
                 this.innerAreaSize = this.innerArea.offsetHeight;
                 knotSize = this.knot.offsetHeight;
             }
             else {
+                offset = offset.x;
                 this.innerAreaSize = this.innerArea.offsetWidth;
                 knotSize = this.knot.offsetWidth;
             }
+            this.globalOffset = offset;
             this.knotHalfSize = 0.5 * knotSize;
             this.snapGap = (this.valuableArea = Math.max(this.innerAreaSize - knotSize, 0)) / (this.steps = Math.ceil((this._max - this._min) / this._modifier));
         },
@@ -231,7 +234,6 @@
 
         _onTap: function(e) {
             var mod = (this.paddingModifier || this._modifier);
-
             if ((this._vertical ? e.touches[0].pageY : e.touches[0].pageX) - this.globalOffset - this.knotPosition < 0)
                 this.value(this._value - mod);
             else
@@ -239,8 +241,6 @@
         },
 
         _onStart: function (e) {
-            var offset = this.getGlobalOffset(this.slider);
-            this.globalOffset = this._vertical ? offset.y : offset.x;
             this._updateSizes();
             this._onMove(e);
             document.addEventListener(this.eventEnd, this, false);
