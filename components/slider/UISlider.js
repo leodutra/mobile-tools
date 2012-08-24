@@ -110,6 +110,22 @@
         // REDRAW LOCK
         redrawLocked: false,
         lastTime: 0,
+        
+        _ceil: function(n) {
+            return n % 1 ? (n > 0 ? n + 1 >>> 0 : n >> 0) : n;
+        },
+        
+        _floor: function(n) {
+            return n % 1 ? (n > 0 ? n >> 0 : n - 1 >> 0) : n;
+        },
+        
+        _high: function(a, b) {
+            return a < b ? b : a;
+        },
+        
+        _round(n) {
+            return n + (n < 0 ? -0.5 : 0.5) | 0;
+        },
 
         update: function (skipRedraw) {
             this._updateSizes();
@@ -130,7 +146,7 @@
             }
             this.globalOffset = offset;
             this.knotHalfSize = 0.5 * knotSize;
-            this.snapGap = (this.valuableArea = Math.max(this.innerAreaSize - knotSize, 0)) / (this.steps = Math.ceil((this._max - this._min) / this._modifier));
+            this.snapGap = (this.valuableArea = this._high(this.innerAreaSize - knotSize, 0)) / (this.steps = this._ceil((this._max - this._min) / this._modifier));
         },
 
         snapping: function (bool, skipRedraw) {
@@ -185,7 +201,7 @@
 
         value: function (value, skipRedraw) {
             var min = this._min;
-            var stepsFromOrigin = Math.round(((typeof value == 'number' ? value : this._value) - min) / this._modifier);
+            var stepsFromOrigin = this._round(((typeof value == 'number' ? value : this._value) - min) / this._modifier);
 
             this._value = this.limit(stepsFromOrigin * this._modifier + min, min, this._max);
             if (this.valueCallback) this.valueCallback(this._value);
@@ -229,7 +245,7 @@
                 }
             }
             else if (e.type === this.eventEnd)
-                this._onEnd(e);
+                this._onEnd();
         },
 
         _onTap: function(e) {
@@ -238,6 +254,7 @@
                 this.value(this._value - mod);
             else
                 this.value(this._value + mod);
+            if (this.onEnd) this.onEnd(this._value);
         },
 
         _onStart: function (e) {
@@ -249,7 +266,7 @@
 
         _onMove: function (e) {
             var pointerRelativePosition = this.limit((this._vertical ? e.touches[0].pageY : e.touches[0].pageX) - this.globalOffset - this.knotHalfSize, 0, this.valuableArea);
-            var stepsFromOrigin = Math.round(pointerRelativePosition / this.snapGap);
+            var stepsFromOrigin = this._round(pointerRelativePosition / this.snapGap);
             this._value = this.limit(stepsFromOrigin * this._modifier + this._min, this._min, this._max);
             if (this.valueCallback) this.valueCallback(this._value);
 
