@@ -63,7 +63,7 @@
             knot.className = 'knot';
             this.knotStyle = knot.style;
 
-            this.update();
+            this.update(false, true);
             this.knot.addEventListener(this.eventStart, this, false);
             this.slider.addEventListener(this.eventStart, this, false);
         }
@@ -127,9 +127,9 @@
             return n + (n < 0 ? -0.5 : 0.5) | 0;
         },
 
-        update: function (skipRedraw) {
+        update: function (skipRedraw, ignoreModifier) {
             this._updateSizes();
-            this.value(this._value, skipRedraw);
+            this.value(this._value, skipRedraw, ignoreModifier);
         },
 
         _updateSizes: function () {
@@ -198,9 +198,10 @@
             return this._modifier;
         },
 
-        value: function (value, skipRedraw) {
+        value: function (value, skipRedraw, ignoreModifier) {
             var min = this._min;
-            var stepsFromOrigin = this._round(((typeof value == 'number' ? value : this._value) - min) / this._modifier);
+            var stepsFromOrigin  = ((typeof value == 'number' ? value : this._value) - min) / this._modifier;
+            if (!ignoreModifier) stepsFromOrigin = this._round(stepsFromOrigin);
 
             this._value = this.limit(stepsFromOrigin * this._modifier + min, min, this._max);
             if (this.valueCallback) this.valueCallback(this._value);
@@ -245,8 +246,12 @@
 
         _onTap: function (e) {
             var mod = (this.paddingModifier || this._modifier);
-            if ((this._vertical ? e.touches[0].pageY : e.touches[0].pageX) - this.globalOffset - this.knotPosition < 0) this.value(this._value - mod);
-            else this.value(this._value + mod);
+            if ((this._vertical ? e.touches[0].pageY : e.touches[0].pageX) - this.globalOffset - this.knotPosition < 0) {
+                this.value(this._value - mod);
+            }
+            else {
+                this.value(this._value + mod);
+            }
             if (this.onEnd) this.onEnd(this._value);
         },
 
@@ -308,8 +313,7 @@
         },
 
         getGlobalOffset: function (el) {
-            var x = 0,
-                y = 0;
+            var x = 0, y = 0;
             while (el) {
                 x += el.offsetLeft;
                 y += el.offsetTop;
