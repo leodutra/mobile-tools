@@ -123,7 +123,7 @@
             return a < b ? b : a;
         },
 
-        _round(n) {
+        _round: function(n) {
             return n + (n < 0 ? -0.5 : 0.5) | 0;
         },
 
