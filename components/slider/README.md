@@ -4,7 +4,7 @@ https://c9.io/leodutra/moby-tools/workspace/components/slider/index.html
 ### Methods
     Slider(slider, initialValue = 0, max = 100, min = 0, modifier = 1, snapping = false, valueCallback = null, vertical = false, disabled = false, paddingMode = false, paddingModifier:Number)
     
-    update(skipRedraw:Boolean):void
+    update(skipRedraw:Boolean, ignoreModifierConstraint:Boolean):void
     
     snapping(value:Boolean, skipRedraw:Boolean):Boolean
         
@@ -16,7 +16,7 @@ https://c9.io/leodutra/moby-tools/workspace/components/slider/index.html
     
     vertical(value:Boolean, skipRedraw:Boolean):Boolean
     
-    value(value:Number, skipRedraw:Boolean):Number
+    value(value:Number, ignoreModifier:Boolean, skipRedraw:Boolean):Number
     
     disabled(bool:Boolean, skipRedraw:Boolean):Boolean
         
