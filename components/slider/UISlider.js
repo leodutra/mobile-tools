@@ -112,11 +112,11 @@
         lastTime: 0,
 
         _ceil: function (n) {
-            return n % 1 ? (n > 0 ? n + 1 >>> 0 : n >> 0) : n;
+            return n % 1 ? (n > 0 ? n + 1 | 0 : n | 0) : n;
         },
 
         _floor: function (n) {
-            return n % 1 ? (n > 0 ? n >> 0 : n - 1 >> 0) : n;
+            return n % 1 ? (n > 0 ? n | 0 : n - 1 | 0) : n;
         },
 
         _high: function (a, b) {
@@ -288,11 +288,11 @@
             }
 
             if (this._vertical) {
-                this.knotStyle.top = (this.knotPosition >> 0) + 'px';
-                this.fillerStyle.height = (this.knotPosition + this.knotHalfSize >> 0) + 'px';
+                this.knotStyle.top = (this.knotPosition | 0) + 'px';
+                this.fillerStyle.height = (this.knotPosition + this.knotHalfSize | 0) + 'px';
             } else {
-                this.knotStyle.left = (this.knotPosition >> 0) + 'px';
-                this.fillerStyle.width = (this.knotPosition + this.knotHalfSize >> 0) + 'px';
+                this.knotStyle.left = (this.knotPosition | 0) + 'px';
+                this.fillerStyle.width = (this.knotPosition + this.knotHalfSize | 0) + 'px';
             }
         },
 
