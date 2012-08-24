@@ -26,7 +26,7 @@
     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
     OTHER DEALINGS IN THE SOFTWARE.
  */
-
+ 
 (function (window) {
 
     "use strict"; // Strict Mode compilant
@@ -110,19 +110,19 @@
         // REDRAW LOCK
         redrawLocked: false,
         lastTime: 0,
-        
-        _ceil: function(n) {
+
+        _ceil: function (n) {
             return n % 1 ? (n > 0 ? n + 1 >>> 0 : n >> 0) : n;
         },
-        
-        _floor: function(n) {
+
+        _floor: function (n) {
             return n % 1 ? (n > 0 ? n >> 0 : n - 1 >> 0) : n;
         },
-        
-        _high: function(a, b) {
+
+        _high: function (a, b) {
             return a < b ? b : a;
         },
-        
+
         _round(n) {
             return n + (n < 0 ? -0.5 : 0.5) | 0;
         },
@@ -132,14 +132,13 @@
             this.value(this._value, skipRedraw);
         },
 
-        _updateSizes: function() {
+        _updateSizes: function () {
             var knotSize, offset = this.getGlobalOffset(this.slider);
             if (this._vertical) {
                 offset = offset.y;
                 this.innerAreaSize = this.innerArea.offsetHeight;
                 knotSize = this.knot.offsetHeight;
-            }
-            else {
+            } else {
                 offset = offset.x;
                 this.innerAreaSize = this.innerArea.offsetWidth;
                 knotSize = this.knot.offsetWidth;
@@ -234,26 +233,20 @@
                 }];
             }
 
-            if (e.type === this.eventMove)
-                this._onMove(e);
+            if (e.type === this.eventMove) this._onMove(e);
             else if (e.type === this.eventStart) {
                 if (e.target === this.knot || !this._paddingMode) {
                     this._onStart(e);
-                }
-                else {
+                } else {
                     this._onTap(e);
                 }
-            }
-            else if (e.type === this.eventEnd)
-                this._onEnd();
+            } else if (e.type === this.eventEnd) this._onEnd();
         },
 
-        _onTap: function(e) {
+        _onTap: function (e) {
             var mod = (this.paddingModifier || this._modifier);
-            if ((this._vertical ? e.touches[0].pageY : e.touches[0].pageX) - this.globalOffset - this.knotPosition < 0)
-                this.value(this._value - mod);
-            else
-                this.value(this._value + mod);
+            if ((this._vertical ? e.touches[0].pageY : e.touches[0].pageX) - this.globalOffset - this.knotPosition < 0) this.value(this._value - mod);
+            else this.value(this._value + mod);
             if (this.onEnd) this.onEnd(this._value);
         },
 
@@ -289,8 +282,7 @@
             if (this._lastDisabled !== this._disabled) {
                 if ((this._lastDisabled = this._disabled)) {
                     this.slider.className += ' disabled';
-                }
-                else {
+                } else {
                     this.slider.className = this.slider.className.replace(/\bdisabled\b/, '');
                 }
             }
@@ -298,8 +290,7 @@
             if (this._vertical) {
                 this.knotStyle.top = (this.knotPosition >> 0) + 'px';
                 this.fillerStyle.height = (this.knotPosition + this.knotHalfSize >> 0) + 'px';
-            }
-            else {
+            } else {
                 this.knotStyle.left = (this.knotPosition >> 0) + 'px';
                 this.fillerStyle.width = (this.knotPosition + this.knotHalfSize >> 0) + 'px';
             }
@@ -317,7 +308,8 @@
         },
 
         getGlobalOffset: function (el) {
-            var x = 0, y = 0;
+            var x = 0,
+                y = 0;
             while (el) {
                 x += el.offsetLeft;
                 y += el.offsetTop;
