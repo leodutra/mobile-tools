@@ -127,9 +127,9 @@
             return n + (n < 0 ? -0.5 : 0.5) | 0;
         },
 
-        update: function (skipRedraw, ignoreModifier) {
+        update: function (skipRedraw, ignoreModifierConstraint) {
             this._updateSizes();
-            this.value(this._value, skipRedraw, ignoreModifier);
+            this.value(this._value, ignoreModifierConstraint, skipRedraw);
         },
 
         _updateSizes: function () {
@@ -198,7 +198,7 @@
             return this._modifier;
         },
 
-        value: function (value, skipRedraw, ignoreModifier) {
+        value: function (value, ignoreModifier, skipRedraw) {
             var min = this._min;
             var stepsFromOrigin  = ((typeof value == 'number' ? value : this._value) - min) / this._modifier;
             if (!ignoreModifier) stepsFromOrigin = this._round(stepsFromOrigin);
