@@ -1,6 +1,6 @@
 /*
     Moby Tools UISlider
-    https://github.com/LeoDutra/Moby-Tools/tree/master/components/slider
+    https://github.com/LeoDutra/Mobile-tools/tree/master/components/slider
 
     MIT License:
     Copyright (c) 2012 Leonardo Dutra Constancio
