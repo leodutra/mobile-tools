@@ -1,6 +1,6 @@
 /*
     Moby Tools UISlider
-    https://github.com/LeoDutra/Mobile-tools/tree/master/components/slider
+    https://github.com/LeoDutra/mobile-tools/tree/master/components/slider
 
     MIT License:
     Copyright (c) 2012 Leonardo Dutra Constancio
@@ -29,7 +29,7 @@
  
 (function (window) {
 
-    "use strict"; // Strict Mode compilant
+    "use strict"; // Strict Mode compatible
 
     function UISlider(slider, initialValue, max, min, modifier, snapping, valueCallback, vertical, disabled, paddingMode, paddingModifier) {
         if (this instanceof UISlider && slider && slider.nodeType === 1 /* MUST BE AN ELEMENT */ ) {
