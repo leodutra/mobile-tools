@@ -112,11 +112,11 @@
         lastTime: 0,
 
         _ceil: function (n) {
-            return n % 1 ? (n > 0 ? n + 1 | 0 : n | 0) : n;
+            return n % 1 ? (n > 0 ? n + 1 : n) | 0 : n;
         },
 
         _floor: function (n) {
-            return n % 1 ? (n > 0 ? n | 0 : n - 1 | 0) : n;
+            return n % 1 ? (n > 0 ? n : n - 1) | 0 : n;
         },
 
         _high: function (a, b) {
@@ -124,7 +124,7 @@
         },
 
         _round: function(n) {
-            return n + (n < 0 ? -0.5 : 0.5) | 0;
+            return (n < 0 ? -0.5 : 0.5) + n | 0;
         },
 
         update: function (skipRedraw, ignoreModifierConstraint) {
